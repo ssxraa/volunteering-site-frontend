@@ -1,0 +1,535 @@
+models :
+# models.py
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class User(AbstractUser):
+    USER_TYPES = (
+        ('volunteer', 'Volunteer'),
+        ('organization', 'Organization'),
+        ('admin', 'Admin'),
+    )
+    
+    email = models.EmailField(unique=True)
+    user_type = models.CharField(max_length=20, choices=USER_TYPES)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Remove username field, use email instead
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    class Meta:
+        db_table = 'users'
+
+class VolunteerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    bio = models.TextField(blank=True, null=True)
+    motivations = models.TextField(blank=True, null=True)
+    availability = models.JSONField(blank=True, null=True)  # For availability preferences
+    total_hours = models.IntegerField(default=0)
+    avatar_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'volunteer_profiles'
+
+class OrganizationProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    mission_statement = models.TextField(blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    website_url = models.URLField(blank=True, null=True)
+    logo_url = models.URLField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'organization_profiles'
+
+class AdminProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    admin_role = models.CharField(max_length=50, default='skill_moderator')
+    permissions = models.JSONField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'admin_profiles'
+
+class MissionCategory(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'mission_categories'
+        verbose_name_plural = "Mission categories"
+
+class VolunteerInterest(models.Model):
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(MissionCategory, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'volunteer_interests'
+        unique_together = ('volunteer', 'category')
+
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    requires_verification = models.BooleanField(default=False)
+    created_by = models.ForeignKey('AdminProfile', on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'skills'
+
+class VolunteerSkill(models.Model):
+    VERIFICATION_STATUS = (
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    )
+    
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='pending')
+    verified_by = models.ForeignKey('AdminProfile', on_delete=models.SET_NULL, null=True, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'volunteer_skills'
+        unique_together = ('volunteer', 'skill')
+
+class SkillVerificationRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('in_review', 'In Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+    
+    volunteer_skill = models.ForeignKey(VolunteerSkill, on_delete=models.CASCADE)
+    requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey('AdminProfile', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'skill_verification_requests'
+
+class SDG(models.Model):
+    number = models.IntegerField(unique=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'sdgs'
+        verbose_name = 'Sustainable Development Goal'
+        verbose_name_plural = 'Sustainable Development Goals'
+
+class Mission(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    )
+    
+    organization = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'organization'})
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    location = models.CharField(max_length=255)
+    mission_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    volunteers_required = models.IntegerField()
+    volunteers_accepted = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    sdg = models.ForeignKey(SDG, on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.ForeignKey(MissionCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'missions'
+
+class MissionSkill(models.Model):
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
+    is_required = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'mission_skills'
+        unique_together = ('mission', 'skill')
+
+class Application(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('withdrawn', 'Withdrawn'),
+    )
+    
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'volunteer'})
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    applied_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                  limit_choices_to={'user_type': 'organization'})
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'applications'
+        unique_together = ('mission', 'volunteer')
+
+class VolunteerHours(models.Model):
+    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'volunteer'})
+    hours_completed = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0.01)])
+    validated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                   limit_choices_to={'user_type': 'organization'})
+    validated_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'volunteer_hours'
+
+class Rating(models.Model):
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                limit_choices_to={'user_type': 'volunteer'})
+    organization = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                   limit_choices_to={'user_type': 'organization'})
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comments = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'ratings'
+
+class AdminAuditLog(models.Model):
+    admin = models.ForeignKey('AdminProfile', on_delete=models.CASCADE)
+    action = models.CharField(max_length=100)
+    resource_type = models.CharField(max_length=50, blank=True, null=True)
+    resource_id = models.IntegerField(null=True, blank=True)
+    details = models.JSONField(blank=True, null=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'admin_audit_log'
+
+
+
+
+sql :
+-- Core Users table (handles volunteers, organizations, and admins)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    user_type VARCHAR(20) CHECK (user_type IN ('volunteer', 'organization', 'admin')),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Volunteer-specific profile
+CREATE TABLE volunteer_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    bio TEXT,
+    motivations TEXT,
+    availability TEXT, -- JSON field for availability preferences
+    total_hours INTEGER DEFAULT 0,
+    avatar_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Organization-specific profile  
+CREATE TABLE organization_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    mission_statement TEXT,
+    contact_email VARCHAR(255),
+    phone_number VARCHAR(50),
+    website_url VARCHAR(500),
+    logo_url VARCHAR(500),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Admin-specific profile
+CREATE TABLE admin_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    admin_role VARCHAR(50) DEFAULT 'skill_moderator',
+    permissions JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Mission categories/causes (for filtering by interests)
+CREATE TABLE mission_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Volunteer interests (many-to-many with categories)
+CREATE TABLE volunteer_interests (
+    volunteer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES mission_categories(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (volunteer_id, category_id)
+);
+
+-- Skills catalog
+CREATE TABLE skills (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    requires_verification BOOLEAN DEFAULT FALSE,
+    created_by INTEGER REFERENCES admin_profiles(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Volunteer skills with verification status (FIXED: references users.id)
+CREATE TABLE volunteer_skills (
+    id SERIAL PRIMARY KEY,
+    volunteer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    skill_id INTEGER REFERENCES skills(id) ON DELETE CASCADE,
+    verification_status VARCHAR(20) DEFAULT 'pending' CHECK (verification_status IN ('pending', 'verified', 'rejected')),
+    verified_by INTEGER REFERENCES admin_profiles(user_id),
+    verified_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(volunteer_id, skill_id)
+);
+
+-- Skill verification requests log
+CREATE TABLE skill_verification_requests (
+    id SERIAL PRIMARY KEY,
+    volunteer_skill_id INTEGER REFERENCES volunteer_skills(id) ON DELETE CASCADE,
+    requested_by INTEGER REFERENCES users(id),
+    assigned_to INTEGER REFERENCES admin_profiles(user_id),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_review', 'approved', 'rejected')),
+    admin_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP
+);
+
+-- UN Sustainable Development Goals (from XML import)
+CREATE TABLE sdgs (
+    id SERIAL PRIMARY KEY,
+    number INTEGER UNIQUE NOT NULL, -- SDG number (1-17)
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Missions/Volunteer Opportunities
+CREATE TABLE missions (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES users(id) ON DELETE CASCADE, -- FIXED: references users.id
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(255),
+    mission_date DATE NOT NULL,
+    start_time TIME,
+    end_time TIME,
+    volunteers_required INTEGER NOT NULL,
+    volunteers_accepted INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('draft', 'active', 'completed', 'cancelled')),
+    sdg_id INTEGER REFERENCES sdgs(id),
+    category_id INTEGER REFERENCES mission_categories(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (volunteers_accepted <= volunteers_required)
+);
+
+-- Mission required skills
+CREATE TABLE mission_skills (
+    id SERIAL PRIMARY KEY,
+    mission_id INTEGER REFERENCES missions(id) ON DELETE CASCADE,
+    skill_id INTEGER REFERENCES skills(id) ON DELETE CASCADE,
+    is_required BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(mission_id, skill_id)
+);
+
+-- Applications system (FIXED: references users.id)
+CREATE TABLE applications (
+    id SERIAL PRIMARY KEY,
+    mission_id INTEGER REFERENCES missions(id) ON DELETE CASCADE,
+    volunteer_id INTEGER REFERENCES users(id) ON DELETE CASCADE, -- FIXED: references users.id
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'withdrawn')),
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    reviewed_by INTEGER REFERENCES users(id), -- FIXED: references users.id (organization user)
+    notes TEXT,
+    UNIQUE(mission_id, volunteer_id)
+);
+
+-- Hours validation system (FIXED: references users.id)
+CREATE TABLE volunteer_hours (
+    id SERIAL PRIMARY KEY,
+    application_id INTEGER REFERENCES applications(id) ON DELETE CASCADE,
+    mission_id INTEGER REFERENCES missions(id),
+    volunteer_id INTEGER REFERENCES users(id) ON DELETE CASCADE, -- FIXED: references users.id
+    hours_completed DECIMAL(4,2) NOT NULL CHECK (hours_completed > 0),
+    validated_by INTEGER REFERENCES users(id), -- FIXED: references users.id (organization user)
+    validated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Rating system (advanced feature)
+CREATE TABLE ratings (
+    id SERIAL PRIMARY KEY,
+    mission_id INTEGER REFERENCES missions(id),
+    volunteer_id INTEGER REFERENCES users(id),
+    organization_id INTEGER REFERENCES users(id),
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (volunteer_id IS NOT NULL OR organization_id IS NOT NULL) -- At least one rating party
+);
+
+-- Admin audit log
+CREATE TABLE admin_audit_log (
+    id SERIAL PRIMARY KEY,
+    admin_id INTEGER REFERENCES admin_profiles(user_id),
+    action VARCHAR(100) NOT NULL,
+    resource_type VARCHAR(50),
+    resource_id INTEGER,
+    details JSONB,
+    ip_address INET,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================================================
+-- CRITICAL CONSTRAINTS AND BUSINESS RULES
+-- =============================================================================
+
+-- Function to check if volunteer can apply (enforces verified skills requirement)
+CREATE OR REPLACE FUNCTION can_volunteer_apply(
+    p_volunteer_id INTEGER, 
+    p_mission_id INTEGER
+) RETURNS BOOLEAN AS $$
+DECLARE
+    missing_skills INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO missing_skills
+    FROM mission_skills ms
+    JOIN skills s ON ms.skill_id = s.id
+    WHERE ms.mission_id = p_mission_id 
+    AND ms.is_required = TRUE
+    AND s.requires_verification = TRUE
+    AND NOT EXISTS (
+        SELECT 1 FROM volunteer_skills vs
+        WHERE vs.volunteer_id = p_volunteer_id
+        AND vs.skill_id = ms.skill_id
+        AND vs.verification_status = 'verified'
+    );
+    
+    RETURN missing_skills = 0;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to enforce volunteer skill requirements before application approval
+CREATE OR REPLACE FUNCTION check_volunteer_skills_before_approval()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'approved' AND OLD.status != 'approved' THEN
+        IF NOT can_volunteer_apply(NEW.volunteer_id, NEW.mission_id) THEN
+            RAISE EXCEPTION 'Volunteer does not meet required verified skills for this mission';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_skills_before_approval
+    BEFORE UPDATE ON applications
+    FOR EACH ROW
+    EXECUTE FUNCTION check_volunteer_skills_before_approval();
+
+-- =============================================================================
+-- PERFORMANCE INDEXES
+-- =============================================================================
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_type ON users(user_type);
+CREATE INDEX idx_volunteer_profiles_user_id ON volunteer_profiles(user_id);
+CREATE INDEX idx_organization_profiles_user_id ON organization_profiles(user_id);
+CREATE INDEX idx_admin_profiles_user_id ON admin_profiles(user_id);
+
+CREATE INDEX idx_missions_date_status ON missions(mission_date, status);
+CREATE INDEX idx_missions_organization ON missions(organization_id);
+CREATE INDEX idx_missions_sdg ON missions(sdg_id);
+CREATE INDEX idx_missions_category ON missions(category_id);
+
+CREATE INDEX idx_applications_mission_status ON applications(mission_id, status);
+CREATE INDEX idx_applications_volunteer_status ON applications(volunteer_id, status);
+CREATE INDEX idx_applications_reviewed_by ON applications(reviewed_by);
+
+CREATE INDEX idx_volunteer_skills_verification ON volunteer_skills(volunteer_id, verification_status);
+CREATE INDEX idx_volunteer_skills_skill ON volunteer_skills(skill_id);
+CREATE INDEX idx_mission_skills_required ON mission_skills(mission_id, is_required);
+
+CREATE INDEX idx_volunteer_hours_mission ON volunteer_hours(mission_id);
+CREATE INDEX idx_volunteer_hours_volunteer ON volunteer_hours(volunteer_id);
+CREATE INDEX idx_volunteer_hours_validated ON volunteer_hours(validated_at);
+
+CREATE INDEX idx_ratings_mission ON ratings(mission_id);
+CREATE INDEX idx_ratings_volunteer ON ratings(volunteer_id);
+CREATE INDEX idx_ratings_organization ON ratings(organization_id);
+
+-- =============================================================================
+-- SAMPLE DATA FOR TESTING
+-- =============================================================================
+
+-- Insert sample SDGs (from XML import)
+INSERT INTO sdgs (number, title, description) VALUES
+(1, 'No Poverty', 'End poverty in all its forms everywhere'),
+(2, 'Zero Hunger', 'End hunger, achieve food security and improved nutrition...'),
+(3, 'Good Health and Well-being', 'Ensure healthy lives and promote well-being for all...');
+
+-- Insert sample mission categories
+INSERT INTO mission_categories (name, description) VALUES
+('Environment', 'Environmental conservation and cleanup activities'),
+('Education', 'Teaching, tutoring, and educational support'),
+('Healthcare', 'Medical support and health awareness campaigns'),
+('Social Services', 'Support for vulnerable populations');
+
+-- Insert sample skills
+INSERT INTO skills (name, description, requires_verification) VALUES
+('First Aid', 'Basic medical emergency response', TRUE),
+('Teaching', 'Classroom instruction and tutoring', FALSE),
+('Public Speaking', 'Speaking to groups and presentations', FALSE),
+('Sign Language', 'Communication using sign language', TRUE),
+('Construction', 'Basic building and repair skills', FALSE);
