@@ -9,9 +9,7 @@
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
-	import { api } from '$lib/api/client';
-	import { missionsApi } from '$lib/api/missions';
-
+	
 	$: organizationId = $page.params.id;
 
 	let loading = true;
@@ -27,13 +25,39 @@
 		loading = true;
 		error = '';
 		try {
-			const [orgData, missionsData] = await Promise.all([
-				api.get(`/organizations/${organizationId}/`),
-				api.get(`/organizations/${organizationId}/missions/`)
-			]);
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
+			organization = {
+				id: organizationId,
+				name: 'Red Crescent Algeria',
+				description: 'Humanitarian organization providing emergency assistance and disaster relief across Algeria.',
+				logo_url: null,
+				total_missions: 45,
+				total_volunteers: 1200,
+				active_missions_count: 5
+			};
 
-			organization = orgData;
-			missions = missionsData;
+			missions = [
+				{
+					id: '1',
+					title: 'Emergency Relief Distribution',
+					description: 'Distributing food and medical supplies to affected areas.',
+					location: 'Blida',
+					mission_date: new Date(Date.now() + 86400000).toISOString(),
+					volunteers_required: 50,
+					volunteers_accepted: 30
+				},
+				{
+					id: '2',
+					title: 'Blood Donation Drive',
+					description: 'Organizing a blood donation campaign in the city center.',
+					location: 'Algiers',
+					mission_date: new Date(Date.now() + 172800000).toISOString(),
+					volunteers_required: 20,
+					volunteers_accepted: 15
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load organization';
 		} finally {

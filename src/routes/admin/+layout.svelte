@@ -1,26 +1,31 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { authStore, isAdmin } from '$lib/stores/auth';
 	import AdminSidebar from '$lib/components/layout/AdminSidebar.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	let loading = true;
+	
+	// Mock authentication check
+	const mockUser = {
+		isAuthenticated: true,
+		user_type: 'admin'
+	};
 
 	onMount(() => {
-		// Check authentication and user type
-		if (!$authStore.isAuthenticated) {
+		// Check authentication and user type (mocked)
+		if (!mockUser.isAuthenticated) {
 			goto('/login');
 			return;
 		}
 
-		if (!$isAdmin) {
+		if (mockUser.user_type !== 'admin') {
 			// Redirect to appropriate dashboard
 			const redirects = {
 				volunteer: '/volunteer/dashboard',
 				organization: '/organization/dashboard'
 			};
-			goto(redirects[$authStore.user?.user_type] || '/');
+			goto(redirects[mockUser.user_type] || '/');
 			return;
 		}
 

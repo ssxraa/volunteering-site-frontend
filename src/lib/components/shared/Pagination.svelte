@@ -1,10 +1,7 @@
 <script>
-	import { Button } from '$lib/components/ui/button';
-	import Icon from '@iconify/svelte';
-
 	export let currentPage = 1;
-	export let totalPages = 1;
-	export let onPageChange = () => {};
+	export let totalPages = 10;
+	export let onPageChange = (page) => { currentPage = page; console.log('Page:', page); };
 	export let showFirstLast = true;
 	export let maxVisiblePages = 5;
 
@@ -44,28 +41,30 @@
 	<div class="flex items-center justify-center gap-2">
 		<!-- First Page -->
 		{#if showFirstLast && currentPage > 1}
-			<Button
-				variant="outline"
-				size="sm"
+			<button
 				on:click={() => goToPage(1)}
 				disabled={!canGoPrevious}
-				class="border-primary-300 hover:bg-primary-50"
+				class="rounded-md border border-blue-300 px-3 py-1.5 text-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				<Icon icon="mdi:chevron-double-left" class="w-4 h-4" />
-			</Button>
+				<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M18.41,7.41L17,6L11,12L17,18L18.41,16.59L13.83,12L18.41,7.41M12.41,7.41L11,6L5,12L11,18L12.41,16.59L7.83,12L12.41,7.41Z"/>
+				</svg>
+			</button>
 		{/if}
 
 		<!-- Previous -->
-		<Button
-			variant="outline"
-			size="sm"
+		<button
 			on:click={() => goToPage(currentPage - 1)}
 			disabled={!canGoPrevious}
-			class="border-primary-300 hover:bg-primary-50"
+			class="rounded-md border border-blue-300 px-3 py-1.5 text-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			<Icon icon="mdi:chevron-left" class="w-4 h-4" />
-			<span class="ml-1">Previous</span>
-		</Button>
+			<div class="flex items-center gap-1">
+				<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
+				</svg>
+				<span>Previous</span>
+			</div>
+		</button>
 
 		<!-- Page Numbers -->
 		<div class="flex items-center gap-1">
@@ -74,16 +73,14 @@
 			{/if}
 
 			{#each pages as page}
-				<Button
-					variant={page === currentPage ? 'default' : 'outline'}
-					size="sm"
+				<button
 					on:click={() => goToPage(page)}
 					class={page === currentPage
-						? 'bg-primary-500 hover:bg-primary-600'
-						: 'border-primary-300 hover:bg-primary-50'}
+						? 'rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-600'
+						: 'rounded-md border border-blue-300 px-3 py-1.5 text-sm transition-colors hover:bg-blue-50'}
 				>
 					{page}
-				</Button>
+				</button>
 			{/each}
 
 			{#if pages[pages.length - 1] < totalPages}
@@ -92,33 +89,35 @@
 		</div>
 
 		<!-- Next -->
-		<Button
-			variant="outline"
-			size="sm"
+		<button
 			on:click={() => goToPage(currentPage + 1)}
 			disabled={!canGoNext}
-			class="border-primary-300 hover:bg-primary-50"
+			class="rounded-md border border-blue-300 px-3 py-1.5 text-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
 		>
-			<span class="mr-1">Next</span>
-			<Icon icon="mdi:chevron-right" class="w-4 h-4" />
-		</Button>
+			<div class="flex items-center gap-1">
+				<span>Next</span>
+				<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+				</svg>
+			</div>
+		</button>
 
 		<!-- Last Page -->
 		{#if showFirstLast && currentPage < totalPages}
-			<Button
-				variant="outline"
-				size="sm"
+			<button
 				on:click={() => goToPage(totalPages)}
 				disabled={!canGoNext}
-				class="border-primary-300 hover:bg-primary-50"
+				class="rounded-md border border-blue-300 px-3 py-1.5 text-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				<Icon icon="mdi:chevron-double-right" class="w-4 h-4" />
-			</Button>
+				<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+					<path d="M5.59,7.41L7,6L13,12L7,18L5.59,16.59L10.17,12L5.59,7.41M11.59,7.41L13,6L19,12L13,18L11.59,16.59L16.17,12L11.59,7.41Z"/>
+				</svg>
+			</button>
 		{/if}
 	</div>
 
 	<!-- Page Info -->
-	<div class="text-center text-sm text-gray-600 mt-3">
+	<div class="mt-3 text-center text-sm text-gray-600">
 		Page {currentPage} of {totalPages}
 	</div>
 {/if}

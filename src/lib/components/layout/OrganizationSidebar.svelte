@@ -1,7 +1,6 @@
 <script>
-	import { page } from '$app/stores';
 	import Icon from '@iconify/svelte';
-	import { authStore } from '$lib/stores/auth';
+	
 	import { Button } from '$lib/components/ui/button';
 	import {
 		DropdownMenu,
@@ -12,10 +11,24 @@
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
 	import { goto } from '$app/navigation';
-	import { getInitials } from '$lib/utils/helpers';
 
-	$: user = $authStore.user;
-	$: currentPath = $page.url.pathname;
+	function getInitials(name) {
+		if (!name) return '';
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2);
+	}
+
+	export let user = {
+		email: 'org@example.com',
+		organization_name: 'Helping Hands'
+	};
+	// MATCHING YOUR WORKING PATTERN: accept currentPath prop
+	export let currentPath = '/organization/dashboard';
+
 	$: userInitials = user?.email ? getInitials(user.email) : '?';
 
 	const navItems = [
@@ -26,12 +39,13 @@
 	];
 
 	function handleLogout() {
-		authStore.logout();
+		console.log('Logout clicked');
+		// add your logout logic here (call endpoint, clear store, goto('/login'), etc.)
 	}
 </script>
 
 <svelte:head>
-	<title>Navigation - DZ-Volunteer</title>
+	<title>Navigation - DZ-Volunteer (Organization)</title>
 </svelte:head>
 
 <aside class="border-primary-200 flex h-screen w-64 flex-col border-r bg-white shadow-sm">
@@ -74,7 +88,7 @@
 						class="hover:bg-primary-50 h-auto w-full justify-start gap-3 py-3 text-gray-700"
 					>
 						<div
-							class="bg-accent-500 border-accent-200 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold text-white"
+							class="bg-primary-500 border-primary-200 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold text-white"
 						>
 							{userInitials}
 						</div>

@@ -4,16 +4,15 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	export let category = {
 		name: '',
 		description: ''
 	};
-	export let onSave = () => {};
+	export let onSave = (data) => { console.log('Save category:', data); };
 	export let onCancel = null;
 	export let loading = false;
-	export let mode = 'create'; // create or edit
+	export let mode = 'create';
 
 	let localCategory = { ...category };
 	let errors = {};
@@ -56,7 +55,7 @@
 			bind:value={localCategory.name}
 			on:input={() => clearError('name')}
 			placeholder="e.g., Environment, Education, Healthcare"
-			class="h-11 {errors.name ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.name ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.name}
@@ -66,15 +65,13 @@
 
 	<!-- Description -->
 	<div>
-		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">
-			Description
-		</Label>
+		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">Description</Label>
 		<Textarea
 			id="description"
 			bind:value={localCategory.description}
 			placeholder="Describe what types of missions fall under this category..."
 			rows="4"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 		<p class="text-xs text-gray-500 mt-1">
@@ -83,9 +80,9 @@
 	</div>
 
 	<!-- Examples -->
-	<div class="p-4 bg-primary-50 rounded-lg border border-primary-200">
+	<div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
 		<div class="flex items-start gap-3">
-			<Icon icon="mdi:lightbulb" class="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+			<Icon icon="mdi:lightbulb" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
 			<div class="text-sm text-gray-700">
 				<p class="font-semibold text-gray-900 mb-2">Category Examples:</p>
 				<ul class="list-disc list-inside space-y-1 text-gray-600">
@@ -106,7 +103,7 @@
 				variant="outline"
 				on:click={onCancel}
 				disabled={loading}
-				class="border-primary-300 hover:bg-primary-50"
+				class="border-blue-300 hover:bg-blue-50"
 			>
 				Cancel
 			</Button>
@@ -114,10 +111,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
 			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">{mode === 'create' ? 'Creating...' : 'Saving...'}</span>
 			{:else}
 				<Icon icon={mode === 'create' ? 'mdi:plus' : 'mdi:content-save'} class="w-5 h-5 mr-2" />

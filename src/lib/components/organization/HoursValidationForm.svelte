@@ -5,10 +5,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	export let participants = [];
-	export let onSave = () => {};
+	export let onSave = (data) => { console.log('Validate hours:', data); };
 	export let loading = false;
 
 	let hoursData = participants.map(p => ({
@@ -48,10 +47,10 @@
 <form on:submit|preventDefault={handleSubmit} class="space-y-6">
 	<div class="space-y-4">
 		{#each hoursData as data, index (data.volunteer_id)}
-			<Card class="p-5 border-primary-200">
+			<Card class="p-5 border-blue-200">
 				<div class="flex items-start gap-4">
-					<div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-						<Icon icon="mdi:account" class="w-5 h-5 text-primary-600" />
+					<div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+						<Icon icon="mdi:account" class="w-5 h-5 text-blue-600" />
 					</div>
 					<div class="flex-1 space-y-3">
 						<h4 class="font-semibold text-gray-900">{data.volunteer_name}</h4>
@@ -68,7 +67,7 @@
 								bind:value={data.hours}
 								on:input={() => clearError(`hours_${index}`)}
 								placeholder="e.g., 3.5"
-								class="h-11 {errors[`hours_${index}`] ? 'border-red-500' : 'border-primary-300'}"
+								class="h-11 {errors[`hours_${index}`] ? 'border-red-500' : 'border-blue-300'}"
 								disabled={loading}
 							/>
 							{#if errors[`hours_${index}`]}
@@ -85,7 +84,7 @@
 								bind:value={data.notes}
 								placeholder="Additional notes about the volunteer's contribution..."
 								rows="2"
-								class="border-primary-300"
+								class="border-blue-300"
 								disabled={loading}
 							/>
 						</div>
@@ -99,10 +98,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
 			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">Validating...</span>
 			{:else}
 				<Icon icon="mdi:check-circle" class="w-5 h-5 mr-2" />

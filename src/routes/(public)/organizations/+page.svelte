@@ -2,18 +2,20 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Icon from '@iconify/svelte';
-	import { Card } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
+	import { Card } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
-	import { api } from '$lib/api/client';
-	import { debounce } from '$lib/utils/helpers';
 
 	let loading = true;
 	let organizations = [];
 	let searchQuery = '';
-	let filteredOrganizations = [];
+
+	$: filteredOrganizations = organizations.filter(org => 
+		org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+		org.description?.toLowerCase().includes(searchQuery.toLowerCase())
+	);
 
 	onMount(async () => {
 		await loadOrganizations();
@@ -22,34 +24,52 @@
 	async function loadOrganizations() {
 		loading = true;
 		try {
-			organizations = await api.get('/organizations/public/');
+			// Mock data loading
+			await new Promise(resolve => setTimeout(resolve, 1000));
+
+			organizations = [
+				{
+					id: 'org1',
+					name: 'Green Earth Initiative',
+					description: 'Dedicated to environmental conservation and sustainability across Algeria.',
+					logo_url: null,
+					active_missions_count: 5,
+					total_volunteers: 120,
+					total_missions: 15
+				},
+				{
+					id: 'org2',
+					name: 'Education for All',
+					description: 'Providing educational opportunities to underserved communities.',
+					logo_url: null,
+					active_missions_count: 3,
+					total_volunteers: 85,
+					total_missions: 10
+				},
+				{
+					id: 'org3',
+					name: 'Health & Wellness Foundation',
+					description: 'Promoting health awareness and providing medical assistance.',
+					logo_url: null,
+					active_missions_count: 2,
+					total_volunteers: 60,
+					total_missions: 8
+				},
+				{
+					id: 'org4',
+					name: 'Community Builders',
+					description: 'Building stronger communities through volunteer work and social programs.',
+					logo_url: null,
+					active_missions_count: 4,
+					total_volunteers: 95,
+					total_missions: 12
+				}
+			];
 		} catch (error) {
 			console.error('Failed to load organizations:', error);
 		} finally {
 			loading = false;
 		}
-	}
-
-	const handleSearch = debounce(() => {
-		if (searchQuery) {
-			const query = searchQuery.toLowerCase();
-			filteredOrganizations = organizations.filter(
-				org =>
-					org.name.toLowerCase().includes(query) ||
-					org.description?.toLowerCase().includes(query)
-			);
-		} else {
-			filteredOrganizations = organizations;
-		}
-	}, 300);
-
-	$: {
-		searchQuery;
-		handleSearch();
-	}
-
-	$: if (!searchQuery && organizations.length > 0) {
-		filteredOrganizations = organizations;
 	}
 </script>
 

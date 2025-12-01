@@ -1,22 +1,29 @@
 <script>
 	import { onMount } from 'svelte';
 	import Icon from '@iconify/svelte';
+	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import OrganizationProfileForm from '$lib/components/organization/OrganizationProfileForm.svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import { organizationsApi } from '$lib/api/organizations';
-	import { authStore } from '$lib/stores/auth';
-	import { getInitials } from '$lib/utils/helpers';
+	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 
 	let loading = true;
 	let saving = false;
 	let error = '';
 	let successMessage = '';
 	let profile = null;
+	let user = { email: 'org@example.com' };
 
-	$: user = $authStore.user;
+	function getInitials(name) {
+		if (!name) return '';
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.substring(0, 2);
+	}
+
 	$: profileInitials = profile?.name ? getInitials(profile.name) : '?';
 
 	onMount(async () => {
@@ -27,7 +34,19 @@
 		loading = true;
 		error = '';
 		try {
-			profile = await organizationsApi.getMyOrganization();
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			profile = {
+				id: 'org1',
+				name: 'Green Earth Initiative',
+				description: 'Dedicated to environmental conservation and sustainability.',
+				mission_statement: 'To protect and restore our planet for future generations.',
+				contact_email: 'contact@greenearth.org',
+				phone_number: '+213 555 123 456',
+				website_url: 'https://greenearth.org',
+				address: '123 Eco Lane, Algiers, Algeria',
+				logo_url: null
+			};
 		} catch (err) {
 			error = err.message || 'Failed to load profile';
 		} finally {
@@ -41,9 +60,10 @@
 		successMessage = '';
 
 		try {
-			await organizationsApi.updateOrganization(updatedProfile);
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			profile = { ...profile, ...updatedProfile };
 			successMessage = 'Profile updated successfully!';
-			await loadProfile();
 
 			setTimeout(() => {
 				successMessage = '';
@@ -59,7 +79,6 @@
 		const file = event.target.files?.[0];
 		if (!file) return;
 
-		// Validate file
 		if (!file.type.startsWith('image/')) {
 			error = 'Please select an image file';
 			return;
@@ -71,10 +90,11 @@
 		}
 
 		try {
-			await organizationsApi.uploadLogo(file);
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			profile = { ...profile, logo_url: 'https://via.placeholder.com/150' };
 			successMessage = 'Logo updated successfully!';
-			await loadProfile();
-			
+
 			setTimeout(() => {
 				successMessage = '';
 			}, 3000);
@@ -84,38 +104,34 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Organization Profile - DZ-Volunteer</title>
-</svelte:head>
-
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">
-		<h1 class="text-4xl font-bold text-gray-900 mb-2">Organization Profile</h1>
+		<h1 class="mb-2 text-4xl font-bold text-gray-900">Organization Profile</h1>
 		<p class="text-gray-600">Manage your organization's public information</p>
 	</div>
 
 	{#if loading}
 		<div class="flex justify-center py-20">
-			<LoadingSpinner size="lg" />
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
 		</div>
 	{:else if profile}
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+		<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
 			<!-- Sidebar -->
 			<div class="lg:col-span-1">
 				<div class="sticky top-8 space-y-6">
 					<!-- Logo Card -->
-					<Card class="p-6 border-primary-200 text-center">
-						<div class="relative inline-block mb-4">
+					<Card class="border-blue-200 p-6 text-center">
+						<div class="relative mb-4 inline-block">
 							{#if profile.logo_url}
 								<img
 									src={profile.logo_url}
 									alt="{profile.name} logo"
-									class="w-32 h-32 rounded-lg object-cover mx-auto border-4 border-primary-200"
+									class="mx-auto h-32 w-32 rounded-lg border-4 border-blue-200 object-cover"
 								/>
 							{:else}
 								<div
-									class="w-32 h-32 rounded-lg bg-accent-500 flex items-center justify-center text-white text-4xl font-bold mx-auto border-4 border-accent-200"
+									class="mx-auto flex h-32 w-32 items-center justify-center rounded-lg border-4 border-purple-200 bg-purple-500 text-4xl font-bold text-white"
 								>
 									{profileInitials}
 								</div>
@@ -129,30 +145,26 @@
 							/>
 							<label
 								for="logo-upload"
-								class="absolute bottom-0 right-0 w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-accent-600 transition-colors shadow-lg border-2 border-white"
+								class="absolute bottom-0 right-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-purple-500 shadow-lg transition-colors hover:bg-purple-600"
 							>
-								<Icon icon="mdi:camera" class="w-5 h-5 text-white" />
+								<Icon icon="mdi:camera" class="h-5 w-5 text-white" />
 							</label>
 						</div>
 
-						<h2 class="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
-						<p class="text-sm text-gray-600 mb-4">{user?.email}</p>
+						<h2 class="mb-1 text-xl font-semibold text-gray-900">{profile.name}</h2>
+						<p class="mb-4 text-sm text-gray-600">{user?.email}</p>
 					</Card>
 
 					<!-- Public Profile Link -->
-					<Card class="p-6 border-primary-200">
-						<h3 class="font-semibold text-gray-900 mb-3">Public Profile</h3>
-						<p class="text-sm text-gray-600 mb-4">
+					<Card class="border-blue-200 p-6">
+						<h3 class="mb-3 font-semibold text-gray-900">Public Profile</h3>
+						<p class="mb-4 text-sm text-gray-600">
 							Your profile is visible to volunteers browsing the platform.
 						</p>
-						<a
-							href="/organizations/{profile.id}"
-							target="_blank"
-							class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-2"
-						>
-							<Icon icon="mdi:open-in-new" class="w-4 h-4" />
+						<button class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+							<Icon icon="mdi:open-in-new" class="h-4 w-4" />
 							View Public Profile
-						</a>
+						</button>
 					</Card>
 				</div>
 			</div>
@@ -174,9 +186,9 @@
 				{/if}
 
 				<!-- Profile Form -->
-				<Card class="p-6 border-primary-200">
-					<h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-						<Icon icon="mdi:office-building" class="w-6 h-6 text-primary-500" />
+				<Card class="border-blue-200 p-6">
+					<h2 class="mb-6 flex items-center gap-2 text-2xl font-semibold text-gray-900">
+						<Icon icon="mdi:office-building" class="h-6 w-6 text-blue-500" />
 						Organization Information
 					</h2>
 					<OrganizationProfileForm {profile} onSave={handleSave} loading={saving} />
@@ -185,12 +197,12 @@
 		</div>
 	{:else}
 		<!-- No profile found -->
-		<div class="text-center py-20">
-			<Icon icon="mdi:office-building-off" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-			<h2 class="text-2xl font-bold text-gray-900 mb-2">No Organization Profile Found</h2>
-			<p class="text-gray-600 mb-6">Please contact support to set up your organization profile.</p>
-			<Button on:click={() => loadProfile()} class="bg-primary-500 hover:bg-primary-600">
-				<Icon icon="mdi:refresh" class="w-5 h-5 mr-2" />
+		<div class="py-20 text-center">
+			<Icon icon="mdi:office-building-off" class="mx-auto mb-4 h-16 w-16 text-gray-400" />
+			<h2 class="mb-2 text-2xl font-bold text-gray-900">No Organization Profile Found</h2>
+			<p class="mb-6 text-gray-600">Please contact support to set up your organization profile.</p>
+			<Button on:click={() => loadProfile()} class="bg-blue-500 hover:bg-blue-600">
+				<Icon icon="mdi:refresh" class="mr-2 h-5 w-5" />
 				Retry
 			</Button>
 		</div>

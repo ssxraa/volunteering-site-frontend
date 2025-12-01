@@ -2,10 +2,14 @@
 	import Navbar from '$lib/components/shared/Navbar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
-	import { goto } from '$app/navigation';
-	import { authStore } from '$lib/stores/auth';
 
-	$: isAuthenticated = $authStore.isAuthenticated;
+	// Mock authentication state - replace with your actual logic later
+	let isAuthenticated = false;
+	
+	// Simple navigation function
+	function navigate(path) {
+		window.location.href = path;
+	}
 </script>
 
 <svelte:head>
@@ -30,7 +34,7 @@
 					{#if isAuthenticated}
 						<Button
 							size="lg"
-							on:click={() => goto('/missions')}
+							on:click={() => navigate('/missions')}
 							class="bg-primary-500 hover:bg-primary-600 text-lg px-8"
 						>
 							<Icon icon="mdi:compass" class="w-5 h-5 mr-2" />
@@ -39,7 +43,7 @@
 					{:else}
 						<Button
 							size="lg"
-							on:click={() => goto('/register')}
+							on:click={() => navigate('/register')}
 							class="bg-primary-500 hover:bg-primary-600 text-lg px-8"
 						>
 							Get Started
@@ -48,7 +52,7 @@
 						<Button
 							size="lg"
 							variant="outline"
-							on:click={() => goto('/about')}
+							on:click={() => navigate('/about')}
 							class="border-primary-500 text-primary-600 hover:bg-primary-50 text-lg px-8"
 						>
 							Learn More
@@ -130,7 +134,7 @@
 			</p>
 			<Button
 				size="lg"
-				on:click={() => goto('/register')}
+				on:click={() => navigate('/register')}
 				class="bg-white text-primary-600 hover:bg-gray-100 text-lg px-8"
 			>
 				Join Now

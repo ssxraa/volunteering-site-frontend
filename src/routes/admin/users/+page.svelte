@@ -10,8 +10,6 @@
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { adminApi } from '$lib/api/admin';
-	import { debounce } from '$lib/utils/helpers';
 
 	let loading = true;
 	let error = '';
@@ -26,6 +24,18 @@
 	let dialogAction = null;
 	let processing = false;
 
+	function debounce(func, wait) {
+		let timeout;
+		return function executedFunction(...args) {
+			const later = () => {
+				clearTimeout(timeout);
+				func(...args);
+			};
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+	}
+
 	onMount(async () => {
 		await loadUsers();
 	});
@@ -34,11 +44,47 @@
 		loading = true;
 		error = '';
 		try {
-			const filters = {};
-			if (userTypeFilter !== 'all') filters.user_type = userTypeFilter;
-			if (statusFilter !== 'all') filters.is_active = statusFilter === 'active';
-			
-			users = await adminApi.getUsers(filters);
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			users = [
+				{
+					id: '1',
+					email: 'john.volunteer@example.com',
+					first_name: 'John',
+					last_name: 'Doe',
+					user_type: 'volunteer',
+					is_active: true,
+					created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '2',
+					email: 'green.org@example.com',
+					first_name: null,
+					last_name: null,
+					organization_name: 'Green Algeria',
+					user_type: 'organization',
+					is_active: true,
+					created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '3',
+					email: 'admin@example.com',
+					first_name: 'Admin',
+					last_name: 'User',
+					user_type: 'admin',
+					is_active: true,
+					created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '4',
+					email: 'sarah.volunteer@example.com',
+					first_name: 'Sarah',
+					last_name: 'Smith',
+					user_type: 'volunteer',
+					is_active: false,
+					created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+				}
+			];
 			applyFilters();
 		} catch (err) {
 			error = err.message || 'Failed to load users';
@@ -52,18 +98,28 @@
 	}, 300);
 
 	function applyFilters() {
+		let filtered = users;
+		
+		if (userTypeFilter !== 'all') {
+			filtered = filtered.filter(user => user.user_type === userTypeFilter);
+		}
+		
+		if (statusFilter !== 'all') {
+			filtered = filtered.filter(user => user.is_active === (statusFilter === 'active'));
+		}
+		
 		if (searchQuery) {
 			const query = searchQuery.toLowerCase();
-			filteredUsers = users.filter(
+			filtered = filtered.filter(
 				(user) =>
 					user.email?.toLowerCase().includes(query) ||
 					user.first_name?.toLowerCase().includes(query) ||
 					user.last_name?.toLowerCase().includes(query) ||
 					user.organization_name?.toLowerCase().includes(query)
 			);
-		} else {
-			filteredUsers = users;
 		}
+		
+		filteredUsers = filtered;
 	}
 
 	$: {
@@ -74,7 +130,7 @@
 	$: {
 		userTypeFilter;
 		statusFilter;
-		if (!loading) loadUsers();
+		if (!loading) applyFilters();
 	}
 
 	function handleToggleStatus(user) {
@@ -90,18 +146,22 @@
 		error = '';
 
 		try {
-			if (dialogAction === 'activate') {
-				await adminApi.activateUser(selectedUser.id);
-			} else {
-				await adminApi.deactivateUser(selectedUser.id);
-			}
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
+			// Update user status in mock data
+			users = users.map(u => 
+				u.id === selectedUser.id 
+					? { ...u, is_active: !u.is_active }
+					: u
+			);
 
 			successMessage = `User ${dialogAction}d successfully`;
 			showConfirmDialog = false;
 			selectedUser = null;
 			dialogAction = null;
 
-			await loadUsers();
+			applyFilters();
 
 			setTimeout(() => {
 				successMessage = '';

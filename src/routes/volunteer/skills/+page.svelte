@@ -4,23 +4,21 @@
 	import { Button } from '$lib/components/ui/button';
 	import SkillsList from '$lib/components/volunteer/SkillsList.svelte';
 	import AddSkillModal from '$lib/components/volunteer/AddSkillModal.svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { skillsApi } from '$lib/api/skills';
 
 	let loading = true;
 	let error = '';
+	let successMessage = '';
 	let mySkills = [];
 	let availableSkills = [];
 	let showAddModal = false;
 	let showRemoveDialog = false;
 	let skillToRemove = null;
 	let removing = false;
-	let successMessage = '';
 
-	$: mySkillIds = mySkills.map(s => s.skill.id);
+	$: mySkillIds = mySkills.map((s) => s.skill.id);
 
 	onMount(async () => {
 		await loadData();
@@ -30,12 +28,52 @@
 		loading = true;
 		error = '';
 		try {
-			const [mySkillsData, allSkillsData] = await Promise.all([
-				skillsApi.getMySkills(),
-				skillsApi.getSkills()
-			]);
-			mySkills = mySkillsData;
-			availableSkills = allSkillsData;
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			mySkills = [
+				{
+					id: '1',
+					skill: {
+						id: 's1',
+						name: 'First Aid',
+						description: 'Basic first aid knowledge',
+						requires_verification: true
+					},
+					verification_status: 'verified',
+					verified_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '2',
+					skill: {
+						id: 's2',
+						name: 'Teamwork',
+						description: 'Ability to work effectively in teams',
+						requires_verification: false
+					},
+					verification_status: null,
+					verified_at: null
+				},
+				{
+					id: '3',
+					skill: {
+						id: 's3',
+						name: 'Communication',
+						description: 'Strong communication skills',
+						requires_verification: false
+					},
+					verification_status: null,
+					verified_at: null
+				}
+			];
+
+			availableSkills = [
+				{ id: 's1', name: 'First Aid', description: 'Basic first aid knowledge', requires_verification: true },
+				{ id: 's2', name: 'Teamwork', description: 'Ability to work effectively in teams', requires_verification: false },
+				{ id: 's3', name: 'Communication', description: 'Strong communication skills', requires_verification: false },
+				{ id: 's4', name: 'Leadership', description: 'Team leadership abilities', requires_verification: false },
+				{ id: 's5', name: 'Teaching', description: 'Teaching and mentoring skills', requires_verification: true },
+				{ id: 's6', name: 'Physical Stamina', description: 'Physical endurance', requires_verification: false }
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load skills';
 		} finally {
@@ -44,12 +82,25 @@
 	}
 
 	async function handleAddSkill(skill) {
+		error = '';
+		successMessage = '';
+
 		try {
-			await skillsApi.addSkill(skill.id);
-			successMessage = `${skill.name} added successfully!`;
-			await loadData();
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			mySkills = [
+				...mySkills,
+				{
+					id: `${Date.now()}`,
+					skill: skill,
+					verification_status: null,
+					verified_at: null
+				}
+			];
+
+			successMessage = `Added skill: ${skill.name}`;
 			showAddModal = false;
-			
+
 			setTimeout(() => {
 				successMessage = '';
 			}, 3000);
@@ -58,35 +109,44 @@
 		}
 	}
 
-	function handleRemoveClick(skill) {
-		skillToRemove = skill;
+	function handleRemoveClick(userSkill) {
+		skillToRemove = userSkill;
 		showRemoveDialog = true;
 	}
 
 	async function confirmRemove() {
+		if (!skillToRemove) return;
+
 		removing = true;
+		error = '';
+
 		try {
-			await skillsApi.removeSkill(skillToRemove.id);
-			successMessage = `${skillToRemove.skill.name} removed successfully!`;
-			await loadData();
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			mySkills = mySkills.filter((s) => s.id !== skillToRemove.id);
+			successMessage = `Removed skill: ${skillToRemove.skill.name}`;
 			showRemoveDialog = false;
 			skillToRemove = null;
-			
+
 			setTimeout(() => {
 				successMessage = '';
-			}, 3000);} catch (err) {
+			}, 3000);
+		} catch (err) {
 			error = err.message || 'Failed to remove skill';
 		} finally {
 			removing = false;
 		}
 	}
 
-	async function handleRequestVerification(skill) {
+	async function handleRequestVerification(userSkill) {
+		error = '';
+		successMessage = '';
+
 		try {
-			await skillsApi.requestVerification(skill.id);
-			successMessage = `Verification requested for ${skill.skill.name}!`;
-			await loadData();
-			
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			successMessage = `Verification requested for: ${userSkill.skill.name}`;
+
 			setTimeout(() => {
 				successMessage = '';
 			}, 3000);
@@ -96,23 +156,19 @@
 	}
 </script>
 
-<svelte:head>
-	<title>My Skills - DZ-Volunteer</title>
-</svelte:head>
-
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">
 		<div class="flex items-center justify-between">
 			<div>
-				<h1 class="text-4xl font-bold text-gray-900 mb-2">My Skills</h1>
+				<h1 class="mb-2 text-4xl font-bold text-gray-900">My Skills</h1>
 				<p class="text-gray-600">Manage your skills and certifications</p>
 			</div>
 			<Button
 				on:click={() => (showAddModal = true)}
-				class="bg-primary-500 hover:bg-primary-600 h-11"
+				class="h-11 bg-blue-500 hover:bg-blue-600"
 			>
-				<Icon icon="mdi:plus" class="w-5 h-5 mr-2" />
+				<Icon icon="mdi:plus" class="mr-2 h-5 w-5" />
 				Add Skill
 			</Button>
 		</div>
@@ -133,15 +189,16 @@
 	{/if}
 
 	<!-- Info Card -->
-	<div class="mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+	<div class="mb-8 rounded-xl border border-blue-200 bg-blue-50 p-6">
 		<div class="flex items-start gap-4">
-			<Icon icon="mdi:information" class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+			<Icon icon="mdi:information" class="mt-0.5 h-6 w-6 flex-shrink-0 text-blue-600" />
 			<div>
-				<h3 class="font-semibold text-blue-900 mb-2">About Skills & Verification</h3>
-				<p class="text-sm text-blue-800 mb-2">
-					Some skills require verification by platform administrators before you can apply to missions requiring them.
+				<h3 class="mb-2 font-semibold text-blue-900">About Skills & Verification</h3>
+				<p class="mb-2 text-sm text-blue-800">
+					Some skills require verification by platform administrators before you can apply to
+					missions requiring them.
 				</p>
-				<ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
+				<ul class="list-inside list-disc space-y-1 text-sm text-blue-800">
 					<li>Add skills relevant to your volunteer interests</li>
 					<li>Request verification for skills that require it</li>
 					<li>Verified skills unlock more mission opportunities</li>
@@ -153,7 +210,7 @@
 	<!-- Skills List -->
 	{#if loading}
 		<div class="flex justify-center py-20">
-			<LoadingSpinner size="lg" />
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
 		</div>
 	{:else}
 		<SkillsList
@@ -170,7 +227,7 @@
 	{availableSkills}
 	{mySkillIds}
 	onAdd={handleAddSkill}
-	loading={loading}
+	{loading}
 />
 
 <!-- Remove Confirmation Dialog -->
@@ -180,7 +237,7 @@
 	message="Are you sure you want to remove {skillToRemove?.skill?.name}? This will remove it from your profile."
 	confirmText="Remove"
 	cancelText="Cancel"
-	variant="danger"
+	danger={true}
 	onConfirm={confirmRemove}
 	onCancel={() => {
 		showRemoveDialog = false;

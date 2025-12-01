@@ -3,20 +3,43 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { formatDate, getStatusColor } from '$lib/utils/helpers';
 
-	export let applicant = {};
+	export let applicant = {
+		volunteer_name: 'John Doe',
+		volunteer_email: 'john@example.com',
+		status: 'pending',
+		volunteer_skills: [],
+		notes: '',
+		applied_at: new Date().toISOString()
+	};
 	export let onApprove = null;
 	export let onReject = null;
 	export let disabled = false;
 
+	function formatDate(dateString) {
+		return new Date(dateString).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	function getStatusColor(status) {
+		const colors = {
+			pending: 'bg-yellow-100 text-yellow-700',
+			approved: 'bg-green-100 text-green-700',
+			rejected: 'bg-red-100 text-red-700'
+		};
+		return colors[status] || 'bg-gray-100 text-gray-700';
+	}
+
 	$: statusColor = getStatusColor(applicant.status);
 </script>
 
-<Card class="p-5 border-primary-200">
+<Card class="p-5 border-blue-200">
 	<div class="flex items-start gap-4">
 		<!-- Avatar -->
-		<div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+		<div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
 			{applicant.volunteer_name?.charAt(0).toUpperCase() || '?'}
 		</div>
 
@@ -38,7 +61,7 @@
 					<p class="text-xs text-gray-600 mb-2">Skills:</p>
 					<div class="flex flex-wrap gap-2">
 						{#each applicant.volunteer_skills as skill}
-							<Badge variant="secondary" class="text-xs bg-primary-50 text-primary-700">
+							<Badge variant="secondary" class="text-xs bg-blue-50 text-blue-700">
 								<Icon icon="mdi:certificate" class="w-3 h-3 mr-1" />
 								{skill.name}
 								{#if skill.verification_status === 'verified'}
@@ -70,7 +93,7 @@
 							size="sm"
 							on:click={() => onApprove(applicant)}
 							{disabled}
-							class="bg-accent-500 hover:bg-accent-600 flex-1"
+							class="bg-purple-500 hover:bg-purple-600 flex-1"
 						>
 							<Icon icon="mdi:check" class="w-4 h-4 mr-1" />
 							Approve

@@ -4,7 +4,6 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	export let profile = {
 		first_name: '',
@@ -13,17 +12,22 @@
 		motivations: '',
 		avatar_url: ''
 	};
-	export let onSave = () => {};
+	export let onSave = (data) => { console.log('Save profile:', data); };
 	export let loading = false;
 
 	let localProfile = { ...profile };
 	let errors = {};
+
+	// Loading spinner component
+	let spinnerVisible = false;
 
 	$: {
 		if (profile) {
 			localProfile = { ...profile };
 		}
 	}
+
+	$: spinnerVisible = loading;
 
 	function validate() {
 		errors = {};
@@ -64,7 +68,7 @@
 				bind:value={localProfile.first_name}
 				on:input={() => clearError('first_name')}
 				placeholder="John"
-				class="h-11 {errors.first_name ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.first_name ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.first_name}
@@ -81,7 +85,7 @@
 				bind:value={localProfile.last_name}
 				on:input={() => clearError('last_name')}
 				placeholder="Doe"
-				class="h-11 {errors.last_name ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.last_name ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.last_name}
@@ -98,7 +102,7 @@
 			bind:value={localProfile.bio}
 			placeholder="Tell us about yourself..."
 			rows="4"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 		<p class="text-xs text-gray-500 mt-1">
@@ -116,7 +120,7 @@
 			bind:value={localProfile.motivations}
 			placeholder="Share what motivates you to volunteer..."
 			rows="4"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 		<p class="text-xs text-gray-500 mt-1">
@@ -129,10 +133,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
-			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+			{#if spinnerVisible}
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">Saving...</span>
 			{:else}
 				<Icon icon="mdi:content-save" class="w-5 h-5 mr-2" />

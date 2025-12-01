@@ -8,11 +8,9 @@
 	import ApplicantCard from '$lib/components/organization/ApplicantCard.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
-    import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
+	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { organizationsApi } from '$lib/api/organizations';
-	import { missionsApi } from '$lib/api/missions';
 
 	$: missionId = $page.params.id;
 
@@ -35,12 +33,41 @@
 		loading = true;
 		error = '';
 		try {
-			const [missionData, applicantsData] = await Promise.all([
-				missionsApi.getMission(missionId),
-				organizationsApi.getMissionApplicants(missionId)
-			]);
-			mission = missionData;
-			applicants = applicantsData;
+			// Mock data loading
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			mission = {
+				id: missionId,
+				title: 'Beach Cleanup',
+				status: 'active'
+			};
+
+			applicants = [
+				{
+					id: '101',
+					volunteer_name: 'Alice Smith',
+					status: 'pending',
+					applied_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+					motivation: 'I love the beach and want to help keep it clean!',
+					skills: [{ name: 'Teamwork' }]
+				},
+				{
+					id: '102',
+					volunteer_name: 'Bob Jones',
+					status: 'pending',
+					applied_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+					motivation: 'Looking for volunteer hours.',
+					skills: []
+				},
+				{
+					id: '103',
+					volunteer_name: 'Charlie Brown',
+					status: 'approved',
+					applied_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+					motivation: 'Experienced in waste management.',
+					skills: [{ name: 'Physical Stamina' }]
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load applicants';
 		} finally {
@@ -67,16 +94,21 @@
 		error = '';
 
 		try {
+			// Mock API call
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
 			const status = dialogAction === 'approve' ? 'approved' : 'rejected';
-			await organizationsApi.reviewApplication(selectedApplicant.id, status);
-			
+
+			// Update local state
+			applicants = applicants.map((app) =>
+				app.id === selectedApplicant.id ? { ...app, status } : app
+			);
+
 			successMessage = `Application ${dialogAction === 'approve' ? 'approved' : 'rejected'} successfully`;
 			showConfirmDialog = false;
 			selectedApplicant = null;
 			dialogAction = null;
-			
-			await loadData();
-			
+
 			setTimeout(() => {
 				successMessage = '';
 			}, 3000);
@@ -87,16 +119,16 @@
 		}
 	}
 
-	$: filteredApplicants = applicants.filter(app => {
+	$: filteredApplicants = applicants.filter((app) => {
 		if (activeTab === 'pending') return app.status === 'pending';
 		if (activeTab === 'approved') return app.status === 'approved';
 		if (activeTab === 'rejected') return app.status === 'rejected';
 		return true;
 	});
 
-	$: pendingCount = applicants.filter(a => a.status === 'pending').length;
-	$: approvedCount = applicants.filter(a => a.status === 'approved').length;
-	$: rejectedCount = applicants.filter(a => a.status === 'rejected').length;
+	$: pendingCount = applicants.filter((a) => a.status === 'pending').length;
+	$: approvedCount = applicants.filter((a) => a.status === 'approved').length;
+	$: rejectedCount = applicants.filter((a) => a.status === 'rejected').length;
 </script>
 
 <svelte:head>
@@ -107,10 +139,10 @@
 	<!-- Header -->
 	<Button
 		variant="ghost"
-		on:click={() => goto('/missions')}
+		on:click={() => goto('/organization/missions')}
 		class="mb-6 text-gray-600 hover:text-gray-900"
 	>
-		<Icon icon="mdi:arrow-left" class="w-5 h-5 mr-2" />
+		<Icon icon="mdi:arrow-left" class="mr-2 h-5 w-5" />
 		Back to Missions
 	</Button>
 
@@ -122,7 +154,7 @@
 		<ErrorMessage message="Mission not found" />
 	{:else}
 		<div class="mb-8">
-			<h1 class="text-4xl font-bold text-gray-900 mb-2">Applicants</h1>
+			<h1 class="mb-2 text-4xl font-bold text-gray-900">Applicants</h1>
 			<p class="text-gray-600">{mission.title}</p>
 		</div>
 
@@ -142,14 +174,23 @@
 
 		<!-- Tabs -->
 		<Tabs bind:value={activeTab} class="w-full">
-			<TabsList class="mb-6 bg-white border border-primary-200">
-				<TabsTrigger value="pending" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+			<TabsList class="border-primary-200 mb-6 border bg-white">
+				<TabsTrigger
+					value="pending"
+					class="data-[state=active]:bg-primary-500 data-[state=active]:text-white"
+				>
 					Pending ({pendingCount})
 				</TabsTrigger>
-				<TabsTrigger value="approved" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+				<TabsTrigger
+					value="approved"
+					class="data-[state=active]:bg-primary-500 data-[state=active]:text-white"
+				>
 					Approved ({approvedCount})
 				</TabsTrigger>
-				<TabsTrigger value="rejected" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+				<TabsTrigger
+					value="rejected"
+					class="data-[state=active]:bg-primary-500 data-[state=active]:text-white"
+				>
 					Rejected ({rejectedCount})
 				</TabsTrigger>
 			</TabsList>
@@ -163,7 +204,7 @@
 						description="There are no applications awaiting your review."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplicants as applicant (applicant.id)}
 							<ApplicantCard
 								{applicant}
@@ -185,7 +226,7 @@
 						description="You haven't approved any applications yet."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplicants as applicant (applicant.id)}
 							<ApplicantCard {applicant} />
 						{/each}
@@ -202,7 +243,7 @@
 						description="You haven't rejected any applications."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplicants as applicant (applicant.id)}
 							<ApplicantCard {applicant} />
 						{/each}
@@ -217,7 +258,9 @@
 <ConfirmDialog
 	bind:open={showConfirmDialog}
 	title="{dialogAction === 'approve' ? 'Approve' : 'Reject'} Application"
-	message="Are you sure you want to {dialogAction === 'approve' ? 'approve' : 'reject'} {selectedApplicant?.volunteer_name}'s application?"
+	message="Are you sure you want to {dialogAction === 'approve'
+		? 'approve'
+		: 'reject'} {selectedApplicant?.volunteer_name}'s application?"
 	confirmText={dialogAction === 'approve' ? 'Approve' : 'Reject'}
 	cancelText="Cancel"
 	variant={dialogAction === 'reject' ? 'danger' : 'default'}

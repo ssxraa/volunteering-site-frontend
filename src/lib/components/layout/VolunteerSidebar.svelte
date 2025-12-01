@@ -1,7 +1,6 @@
 <script>
-	import { page } from '$app/stores';
 	import Icon from '@iconify/svelte';
-	import { authStore } from '$lib/stores/auth';
+	
 	import { Button } from '$lib/components/ui/button';
 	import {
 		DropdownMenu,
@@ -12,10 +11,24 @@
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
 	import { goto } from '$app/navigation';
-	import { getInitials } from '$lib/utils/helpers';
 
-	$: user = $authStore.user;
-	$: currentPath = $page.url.pathname;
+	function getInitials(name) {
+		if (!name) return '';
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2);
+	}
+
+	export let user = {
+		email: 'volunteer@example.com',
+		first_name: 'John',
+		last_name: 'Doe'
+	};
+	export let currentPath = '/volunteer/dashboard';
+
 	$: userInitials = user?.email ? getInitials(user.email) : '?';
 
 	const navItems = [
@@ -29,7 +42,7 @@
 	];
 
 	function handleLogout() {
-		authStore.logout();
+		console.log('Logout clicked');
 	}
 </script>
 

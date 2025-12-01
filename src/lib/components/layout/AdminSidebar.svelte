@@ -1,7 +1,6 @@
 <script>
-	import { page } from '$app/stores';
 	import Icon from '@iconify/svelte';
-	import { authStore } from '$lib/stores/auth';
+	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		DropdownMenu,
@@ -12,10 +11,23 @@
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu';
 	import { goto } from '$app/navigation';
-	import { getInitials } from '$lib/utils/helpers';
 
-	$: user = $authStore.user;
-	$: currentPath = $page.url.pathname;
+	function getInitials(name) {
+		if (!name) return '';
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2);
+	}
+
+	export let user = {
+		email: 'admin@example.com',
+		first_name: 'Admin',
+		last_name: 'User'
+	};
+
 	$: userInitials = user?.email ? getInitials(user.email) : '?';
 
 	const navItems = [
@@ -29,12 +41,11 @@
 	];
 
 	function handleLogout() {
-		authStore.logout();
+		console.log('Logout clicked');
 	}
 </script>
 
 <aside class="w-64 border-r border-primary-200 bg-white shadow-sm flex flex-col h-screen">
-	<!-- Brand -->
 	<div class="p-6 border-b border-primary-200">
 		<a href="/" class="flex items-center gap-3">
 			<div class="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center">
@@ -44,13 +55,12 @@
 		</a>
 	</div>
 
-	<!-- Navigation -->
 	<nav class="flex-1 flex flex-col gap-1 px-4 py-6 overflow-y-auto">
 		{#each navItems as item}
 			<a
 				href={item.path}
 				class="relative rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200
-					{currentPath === item.path
+					{$page.url.pathname === item.path
 					? 'bg-primary-100 text-primary-800 font-semibold border-l-4 border-primary-500'
 					: 'text-gray-600 hover:text-primary-700 hover:bg-primary-50'}"
 			>
@@ -62,7 +72,6 @@
 		{/each}
 	</nav>
 
-	<!-- User Section -->
 	{#if user}
 		<div class="p-4 border-t border-primary-200">
 			<DropdownMenu>
@@ -72,9 +81,7 @@
 						variant="ghost"
 						class="w-full justify-start gap-3 hover:bg-primary-50 text-gray-700 h-auto py-3"
 					>
-						<div
-							class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white text-sm font-semibold border-2 border-red-200 flex-shrink-0"
-						>
+						<div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white text-sm font-semibold border-2 border-red-200">
 							{userInitials}
 						</div>
 						<div class="flex flex-col items-start flex-1 min-w-0">
@@ -83,9 +90,11 @@
 						</div>
 					</Button>
 				</DropdownMenuTrigger>
+
 				<DropdownMenuContent align="start" class="w-56 border-primary-200">
 					<DropdownMenuLabel class="text-primary-800">Admin Account</DropdownMenuLabel>
 					<DropdownMenuSeparator class="bg-primary-200" />
+
 					<DropdownMenuItem
 						on:click={() => goto('/settings')}
 						class="text-gray-700 hover:text-primary-700 focus:text-primary-700 focus:bg-primary-50"
@@ -93,7 +102,9 @@
 						<Icon icon="mdi:cog" class="w-4 h-4 mr-2" />
 						Settings
 					</DropdownMenuItem>
+
 					<DropdownMenuSeparator class="bg-primary-200" />
+
 					<DropdownMenuItem
 						on:click={handleLogout}
 						class="text-red-600 hover:text-red-700 focus:text-red-700 focus:bg-red-50"
@@ -105,7 +116,6 @@
 			</DropdownMenu>
 		</div>
 	{:else}
-		<!-- Loading state for admin user -->
 		<div class="p-4 border-t border-primary-200">
 			<div class="flex items-center gap-3 text-gray-500 p-3">
 				<div class="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>

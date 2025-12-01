@@ -5,13 +5,14 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import { debounce } from '$lib/utils/helpers';
 
 	export let open = false;
-	export let availableSkills = [];
+	export let availableSkills = [
+		{ id: 1, name: 'First Aid', description: 'Basic first aid knowledge', requires_verification: true },
+		{ id: 2, name: 'Swimming', description: 'Ability to swim', requires_verification: false }
+	];
 	export let mySkillIds = [];
-	export let onAdd = () => {};
+	export let onAdd = (skill) => { console.log('Add skill:', skill); };
 	export let loading = false;
 
 	let searchQuery = '';
@@ -37,11 +38,11 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="max-w-2xl border-primary-200">
+	<DialogContent class="max-w-2xl border-blue-200">
 		<DialogHeader>
 			<DialogTitle class="text-2xl flex items-center gap-3">
-				<div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-					<Icon icon="mdi:plus" class="text-primary-600 text-xl" />
+				<div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+					<Icon icon="mdi:plus" class="text-blue-600 text-xl" />
 				</div>
 				Add Skills
 			</DialogTitle>
@@ -72,7 +73,7 @@
 			<div class="max-h-96 overflow-y-auto space-y-2">
 				{#if loading}
 					<div class="flex justify-center py-8">
-						<LoadingSpinner />
+						<div class="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
 					</div>
 				{:else if filteredSkills.length === 0}
 					<div class="text-center py-8 text-gray-600">
@@ -83,7 +84,7 @@
 					{#each filteredSkills as skill (skill.id)}
 						<button
 							on:click={() => handleAddSkill(skill)}
-							class="w-full p-4 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors text-left group"
+							class="w-full p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left group"
 						>
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
@@ -102,7 +103,7 @@
 								</div>
 								<Icon
 									icon="mdi:plus-circle"
-									class="w-6 h-6 text-primary-500 group-hover:text-primary-600 flex-shrink-0 ml-3"
+									class="w-6 h-6 text-blue-500 group-hover:text-blue-600 flex-shrink-0 ml-3"
 								/>
 							</div>
 						</button>

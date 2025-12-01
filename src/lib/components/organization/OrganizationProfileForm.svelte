@@ -4,8 +4,6 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import { validateEmail, validateUrl } from '$lib/utils/validators';
 
 	export let profile = {
 		name: '',
@@ -16,7 +14,7 @@
 		website_url: '',
 		address: ''
 	};
-	export let onSave = () => {};
+	export let onSave = (data) => { console.log('Save profile:', data); };
 	export let loading = false;
 
 	let localProfile = { ...profile };
@@ -25,6 +23,20 @@
 	$: {
 		if (profile) {
 			localProfile = { ...profile };
+		}
+	}
+
+	function validateEmail(email) {
+		const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return re.test(email);
+	}
+
+	function validateUrl(url) {
+		try {
+			new URL(url);
+			return true;
+		} catch {
+			return false;
 		}
 	}
 
@@ -76,7 +88,7 @@
 			bind:value={localProfile.name}
 			on:input={() => clearError('name')}
 			placeholder="Your Organization Name"
-			class="h-11 {errors.name ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.name ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.name}
@@ -95,7 +107,7 @@
 			on:input={() => clearError('description')}
 			placeholder="Describe your organization and its mission..."
 			rows="4"
-			class="{errors.description ? 'border-red-500' : 'border-primary-300'}"
+			class="{errors.description ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.description}
@@ -113,7 +125,7 @@
 			bind:value={localProfile.mission_statement}
 			placeholder="Your organization's mission and values..."
 			rows="3"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 	</div>
@@ -130,7 +142,7 @@
 				bind:value={localProfile.contact_email}
 				on:input={() => clearError('contact_email')}
 				placeholder="contact@organization.com"
-				class="h-11 {errors.contact_email ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.contact_email ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.contact_email}
@@ -147,7 +159,7 @@
 				type="tel"
 				bind:value={localProfile.phone_number}
 				placeholder="+213 XXX XXX XXX"
-				class="h-11 border-primary-300"
+				class="h-11 border-blue-300"
 				disabled={loading}
 			/>
 		</div>
@@ -164,7 +176,7 @@
 			bind:value={localProfile.website_url}
 			on:input={() => clearError('website_url')}
 			placeholder="https://www.yourorganization.com"
-			class="h-11 {errors.website_url ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.website_url ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.website_url}
@@ -181,7 +193,7 @@
 			bind:value={localProfile.address}
 			placeholder="Your organization's physical address..."
 			rows="2"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 	</div>
@@ -191,10 +203,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
 			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">Saving...</span>
 			{:else}
 				<Icon icon="mdi:content-save" class="w-5 h-5 mr-2" />

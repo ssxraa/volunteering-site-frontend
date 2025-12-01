@@ -12,10 +12,10 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 	<!-- Total Missions -->
-	<Card class="p-6 border-primary-200">
+	<Card class="p-6 border-blue-200">
 		<div class="flex items-center justify-between mb-4">
-			<div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-				<Icon icon="mdi:clipboard-list" class="w-6 h-6 text-primary-600" />
+			<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+				<Icon icon="mdi:clipboard-list" class="w-6 h-6 text-blue-600" />
 			</div>
 		</div>
 		<h3 class="text-2xl font-bold text-gray-900 mb-1">{stats.total_missions}</h3>
@@ -23,10 +23,10 @@
 	</Card>
 
 	<!-- Active Missions -->
-	<Card class="p-6 border-primary-200">
+	<Card class="p-6 border-blue-200">
 		<div class="flex items-center justify-between mb-4">
-			<div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
-				<Icon icon="mdi:calendar-check" class="w-6 h-6 text-accent-600" />
+			<div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+				<Icon icon="mdi:calendar-check" class="w-6 h-6 text-purple-600" />
 			</div>
 		</div>
 		<h3 class="text-2xl font-bold text-gray-900 mb-1">{stats.active_missions}</h3>
@@ -34,7 +34,7 @@
 	</Card>
 
 	<!-- Total Volunteers -->
-	<Card class="p-6 border-primary-200">
+	<Card class="p-6 border-blue-200">
 		<div class="flex items-center justify-between mb-4">
 			<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
 				<Icon icon="mdi:account-group" class="w-6 h-6 text-blue-600" />
@@ -45,7 +45,7 @@
 	</Card>
 
 	<!-- Pending Applications -->
-	<Card class="p-6 border-primary-200">
+	<Card class="p-6 border-blue-200">
 		<div class="flex items-center justify-between mb-4">
 			<div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
 				<Icon icon="mdi:clock-outline" class="w-6 h-6 text-orange-600" />

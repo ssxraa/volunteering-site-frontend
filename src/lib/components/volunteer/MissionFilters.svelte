@@ -16,10 +16,16 @@
 		sdg: null,
 		category: null
 	};
-	export let sdgs = [];
-	export let categories = [];
-	export let onApply = () => {};
-	export let onClear = () => {};
+	export let sdgs = [
+		{ id: 1, number: 14, title: 'Life Below Water' },
+		{ id: 2, number: 15, title: 'Life on Land' }
+	];
+	export let categories = [
+		{ id: 1, name: 'Environment' },
+		{ id: 2, name: 'Education' }
+	];
+	export let onApply = (filters) => { console.log('Apply filters:', filters); };
+	export let onClear = () => { console.log('Clear filters'); };
 
 	let localFilters = { ...filters };
 
@@ -39,10 +45,10 @@
 	$: hasActiveFilters = localFilters.search || localFilters.sdg || localFilters.category;
 </script>
 
-<div class="bg-white rounded-xl border border-primary-200 p-6 shadow-sm">
+<div class="bg-white rounded-xl border border-blue-200 p-6 shadow-sm">
 	<div class="flex items-center justify-between mb-6">
 		<h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-			<Icon icon="mdi:filter" class="w-5 h-5 text-primary-500" />
+			<Icon icon="mdi:filter" class="w-5 h-5 text-blue-500" />
 			Filter Missions
 		</h3>
 		{#if hasActiveFilters}
@@ -105,7 +111,7 @@
 		<!-- Apply Button -->
 		<Button
 			on:click={handleApply}
-			class="w-full bg-primary-500 hover:bg-primary-600 h-11"
+			class="w-full bg-blue-500 hover:bg-blue-600 h-11"
 		>
 			<Icon icon="mdi:check" class="w-5 h-5 mr-2" />
 			Apply Filters

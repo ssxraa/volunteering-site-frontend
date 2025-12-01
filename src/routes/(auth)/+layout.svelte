@@ -1,17 +1,22 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { authStore } from '$lib/stores/auth';
+	
+	// Mock authentication check
+	const mockUser = {
+		isAuthenticated: false,
+		user_type: null
+	};
 
 	onMount(() => {
-		// Redirect if already authenticated
-		if ($authStore.isAuthenticated) {
+		// Redirect if already authenticated (mocked)
+		if (mockUser.isAuthenticated) {
 			const redirects = {
 				volunteer: '/volunteer/dashboard',
 				organization: '/organization/dashboard',
 				admin: '/admin/dashboard'
 			};
-			goto(redirects[$authStore.user?.user_type] || '/');
+			goto(redirects[mockUser.user_type] || '/');
 		}
 	});
 </script>

@@ -1,86 +1,90 @@
 <script>
-	import { onMount } from 'svelte';
-	import Icon from '@iconify/svelte';
-	import SkillVerificationCard from '$lib/components/admin/SkillVerificationCard.svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import EmptyState from '$lib/components/shared/EmptyState.svelte';
-	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
-	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { adminApi } from '$lib/api/admin';
+  import { onMount } from 'svelte';
+  import SkillVerificationCard from '$lib/components/admin/SkillVerificationCard.svelte';
+  import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
+  import EmptyState from '$lib/components/shared/EmptyState.svelte';
+  import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
+  import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
+  import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 
-	let loading = true;
-	let error = '';
-	let successMessage = '';
-	let verifications = [];
-	let processing = false;
-	let showConfirmDialog = false;
-	let dialogAction = null;
-	let selectedVerification = null;
+  // State variables
+  let loading = true;
+  let error = '';
+  let successMessage = '';
+  let verifications = [];
+  let processing = false;
+  let showConfirmDialog = false;
+  let dialogAction = null; // 'approve' or 'reject'
+  let selectedVerification = null;
 
-	onMount(async () => {
-		await loadVerifications();
-	});
+  // Mock data loader
+  async function loadVerifications() {
+    loading = true;
+    error = '';
+    try {
+      await new Promise(r => setTimeout(r, 800));
+      verifications = [
+        {
+          id: '1',
+          skill_name: 'First Aid',
+          user_name: 'John Doe',
+          submitted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: '2',
+          skill_name: 'Teaching',
+          user_name: 'Sarah Smith',
+          submitted_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: '3',
+          skill_name: 'Public Speaking',
+          user_name: 'Ahmed Ali',
+          submitted_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+    } catch (e) {
+      error = e.message || 'Failed to load verifications';
+    } finally {
+      loading = false;
+    }
+  }
 
-	async function loadVerifications() {
-		loading = true;
-		error = '';
-		try {
-			verifications = await adminApi.getVerificationQueue();
-		} catch (err) {
-			error = err.message || 'Failed to load verifications';
-		} finally {
-			loading = false;
-		}
-	}
+  onMount(() => {
+    loadVerifications();
+  });
 
-	function handleApproveClick(verification) {
-		selectedVerification = verification;
-		dialogAction = 'approve';
-		showConfirmDialog = true;
-	}
+  function handleApproveClick(verification) {
+    selectedVerification = verification;
+    dialogAction = 'approve';
+    showConfirmDialog = true;
+  }
 
-	function handleRejectClick(verification) {
-		selectedVerification = verification;
-		dialogAction = 'reject';
-		showConfirmDialog = true;
-	}
+  function handleRejectClick(verification) {
+    selectedVerification = verification;
+    dialogAction = 'reject';
+    showConfirmDialog = true;
+  }
 
-	async function confirmAction() {
-		if (!selectedVerification || !dialogAction) return;
-
-		processing = true;
-		error = '';
-
-		try {
-			if (dialogAction === 'approve') {
-				await adminApi.approveSkillVerification(selectedVerification.id);
-			} else {
-				await adminApi.rejectSkillVerification(selectedVerification.id);
-			}
-			
-			successMessage = `Skill verification ${dialogAction === 'approve' ? 'approved' : 'rejected'} successfully`;
-			showConfirmDialog = false;
-			selectedVerification = null;
-			dialogAction = null;
-			
-			await loadVerifications();
-			
-			setTimeout(() => {
-				successMessage = '';
-			}, 3000);
-		} catch (err) {
-			error = err.message || `Failed to ${dialogAction} verification`;
-		} finally {
-			processing = false;
-		}
-	}
+  async function confirmAction() {
+    if (!selectedVerification || !dialogAction) return;
+    processing = true;
+    error = '';
+    try {
+      await new Promise(r => setTimeout(r, 600));
+      verifications = verifications.filter(v => v.id !== selectedVerification.id);
+      successMessage = `Skill verification ${dialogAction}d successfully`;
+    } catch (e) {
+      error = e.message || `Failed to ${dialogAction} verification`;
+    } finally {
+      processing = false;
+      showConfirmDialog = false;
+      selectedVerification = null;
+      dialogAction = null;
+      setTimeout(() => (successMessage = ''), 3000);
+    }
+  }
 </script>
-
-<svelte:head>
-	<title>Skill Verification - Admin - DZ-Volunteer</title>
-</svelte:head>
-
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">

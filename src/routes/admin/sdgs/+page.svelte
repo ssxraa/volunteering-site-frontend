@@ -11,7 +11,6 @@
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { adminApi } from '$lib/api/admin';
 
 	let loading = true;
 	let error = '';
@@ -31,7 +30,34 @@
 		loading = true;
 		error = '';
 		try {
-			sdgs = await adminApi.getSDGs();
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			sdgs = [
+				{
+					id: '1',
+					number: 1,
+					title: 'No Poverty',
+					description: 'End poverty in all its forms everywhere'
+				},
+				{
+					id: '2',
+					number: 2,
+					title: 'Zero Hunger',
+					description: 'End hunger, achieve food security and improved nutrition'
+				},
+				{
+					id: '3',
+					number: 3,
+					title: 'Good Health and Well-being',
+					description: 'Ensure healthy lives and promote well-being for all'
+				},
+				{
+					id: '4',
+					number: 13,
+					title: 'Climate Action',
+					description: 'Take urgent action to combat climate change and its impacts'
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load SDGs';
 		} finally {
@@ -60,15 +86,18 @@
 		processing = true;
 		error = '';
 		try {
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
 			if (dialogMode === 'create') {
-				await adminApi.createSDG(sdgData);
+				sdgs = [...sdgs, { ...sdgData, id: String(Date.now()) }];
 				successMessage = 'SDG created successfully';
 			} else {
-				await adminApi.updateSDG(selectedSDG.id, sdgData);
+				sdgs = sdgs.map(s => s.id === selectedSDG.id ? { ...s, ...sdgData } : s);
 				successMessage = 'SDG updated successfully';
 			}
+			
 			showDialog = false;
-			await loadSDGs();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to save SDG';
@@ -81,10 +110,11 @@
 		processing = true;
 		error = '';
 		try {
-			await adminApi.deleteSDG(selectedSDG.id);
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			sdgs = sdgs.filter(s => s.id !== selectedSDG.id);
 			successMessage = 'SDG deleted successfully';
 			showConfirmDelete = false;
-			await loadSDGs();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to delete SDG';

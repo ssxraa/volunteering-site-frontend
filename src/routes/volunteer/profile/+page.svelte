@@ -2,24 +2,21 @@
 	import { onMount } from 'svelte';
 	import Icon from '@iconify/svelte';
 	import { Card } from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button';
 	import ProfileForm from '$lib/components/volunteer/ProfileForm.svelte';
-	import HoursBadge from '$lib/components/volunteer/HoursBadge.svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import { usersApi } from '$lib/api/users';
-	import { authStore } from '$lib/stores/auth';
-	import { getInitials } from '$lib/utils/helpers';
+	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 
 	let loading = true;
 	let saving = false;
 	let error = '';
 	let successMessage = '';
 	let profile = null;
-	let totalHours = 0;
 
-	$: user = $authStore.user;
+	function getInitials(firstName, lastName) {
+		const first = firstName?.charAt(0) || '';
+		const last = lastName?.charAt(0) || '';
+		return (first + last).toUpperCase();
+	}
 
 	onMount(async () => {
 		await loadProfile();
@@ -29,12 +26,15 @@
 		loading = true;
 		error = '';
 		try {
-			const [profileData, hoursData] = await Promise.all([
-				usersApi.getMyProfile(),
-				usersApi.getTotalHours()
-			]);
-			profile = profileData;
-			totalHours = hoursData.total_hours || 0;
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			profile = {
+				first_name: 'Ahmed',
+				last_name: 'Benali',
+				bio: 'Passionate about environmental conservation and community service.',
+				motivations: 'I believe in making a positive impact in my community.',
+				avatar_url: null
+			};
 		} catch (err) {
 			error = err.message || 'Failed to load profile';
 		} finally {
@@ -48,15 +48,10 @@
 		successMessage = '';
 
 		try {
-			await usersApi.updateVolunteerProfile(updatedProfile);
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			profile = { ...profile, ...updatedProfile };
 			successMessage = 'Profile updated successfully!';
-			await loadProfile();
-			
-			// Update auth store with new profile data
-			authStore.updateUser({
-				first_name: updatedProfile.first_name,
-				last_name: updatedProfile.last_name
-			});
 
 			setTimeout(() => {
 				successMessage = '';
@@ -72,7 +67,6 @@
 		const file = event.target.files?.[0];
 		if (!file) return;
 
-		// Validate file
 		if (!file.type.startsWith('image/')) {
 			error = 'Please select an image file';
 			return;
@@ -84,10 +78,11 @@
 		}
 
 		try {
-			await usersApi.uploadAvatar(file);
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			profile = { ...profile, avatar_url: 'https://via.placeholder.com/150' };
 			successMessage = 'Avatar updated successfully!';
-			await loadProfile();
-			
+
 			setTimeout(() => {
 				successMessage = '';
 			}, 3000);
@@ -97,40 +92,36 @@
 	}
 </script>
 
-<svelte:head>
-	<title>My Profile - DZ-Volunteer</title>
-</svelte:head>
-
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">
-		<h1 class="text-4xl font-bold text-gray-900 mb-2">My Profile</h1>
+		<h1 class="mb-2 text-4xl font-bold text-gray-900">My Profile</h1>
 		<p class="text-gray-600">Manage your volunteer profile information</p>
 	</div>
 
 	{#if loading}
 		<div class="flex justify-center py-20">
-			<LoadingSpinner size="lg" />
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+		<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
 			<!-- Sidebar -->
 			<div class="lg:col-span-1">
 				<div class="sticky top-8 space-y-6">
 					<!-- Avatar Card -->
-					<Card class="p-6 border-primary-200 text-center">
-						<div class="relative inline-block mb-4">
+					<Card class="border-blue-200 p-6 text-center">
+						<div class="relative mb-4 inline-block">
 							{#if profile?.avatar_url}
 								<img
 									src={profile.avatar_url}
 									alt="Avatar"
-									class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-primary-200"
+									class="mx-auto h-32 w-32 rounded-full border-4 border-blue-200 object-cover"
 								/>
 							{:else}
 								<div
-									class="w-32 h-32 rounded-full bg-primary-500 flex items-center justify-center text-white text-4xl font-bold mx-auto border-4 border-primary-200"
+									class="mx-auto flex h-32 w-32 items-center justify-center rounded-full border-4 border-blue-200 bg-blue-500 text-4xl font-bold text-white"
 								>
-									{getInitials(`${profile?.first_name || ''} ${profile?.last_name || ''}`)}
+									{getInitials(profile?.first_name, profile?.last_name)}
 								</div>
 							{/if}
 							<input
@@ -142,43 +133,17 @@
 							/>
 							<label
 								for="avatar-upload"
-								class="absolute bottom-0 right-0 w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-600 transition-colors shadow-lg border-2 border-white"
+								class="absolute bottom-0 right-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-blue-500 shadow-lg transition-colors hover:bg-blue-600"
 							>
-								<Icon icon="mdi:camera" class="w-5 h-5 text-white" />
+								<Icon icon="mdi:camera" class="h-5 w-5 text-white" />
 							</label>
 						</div>
 
-						<h2 class="text-xl font-semibold text-gray-900 mb-1">
-							{profile?.first_name || ''} {profile?.last_name || ''}
+						<h2 class="mb-1 text-xl font-semibold text-gray-900">
+							{profile?.first_name || ''}
+							{profile?.last_name || ''}
 						</h2>
-						<p class="text-sm text-gray-600 mb-4">{user?.email}</p>
-
-						<div class="flex justify-center">
-							<HoursBadge hours={totalHours} />
-						</div>
-					</Card>
-
-					<!-- Stats Card -->
-					<Card class="p-6 border-primary-200">
-						<h3 class="font-semibold text-gray-900 mb-4">Profile Stats</h3>
-						<div class="space-y-4">
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:clock-check" class="w-5 h-5 text-accent-500" />
-									<span class="text-sm">Total Hours</span>
-								</div>
-								<span class="font-semibold text-gray-900">{totalHours}</span>
-							</div>
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:calendar-check" class="w-5 h-5 text-primary-500" />
-									<span class="text-sm">Member Since</span>
-								</div>
-								<span class="font-semibold text-gray-900">
-									{new Date(user?.created_at || Date.now()).getFullYear()}
-								</span>
-							</div>
-						</div>
+						<p class="mb-4 text-sm text-gray-600">volunteer@example.com</p>
 					</Card>
 				</div>
 			</div>
@@ -200,10 +165,10 @@
 				{/if}
 
 				<!-- Profile Form -->
-				<Card class="p-6 border-primary-200">
-					<h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-						<Icon icon="mdi:account-edit" class="w-6 h-6 text-primary-500" />
-						Edit Profile
+				<Card class="border-blue-200 p-6">
+					<h2 class="mb-6 flex items-center gap-2 text-2xl font-semibold text-gray-900">
+						<Icon icon="mdi:account" class="h-6 w-6 text-blue-500" />
+						Personal Information
 					</h2>
 					<ProfileForm {profile} onSave={handleSave} loading={saving} />
 				</Card>

@@ -11,17 +11,17 @@
 
 <div class="space-y-4">
 	{#if participants.length === 0}
-		<Card class="p-8 border-primary-200 text-center">
+		<Card class="p-8 border-blue-200 text-center">
 			<Icon icon="mdi:account-group-outline" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
 			<p class="text-gray-600">No participants yet</p>
 		</Card>
 	{:else}
 		{#each participants as participant (participant.id)}
-			<Card class="p-5 border-primary-200 hover:shadow-md transition-shadow">
+			<Card class="p-5 border-blue-200 hover:shadow-md transition-shadow">
 				<div class="flex items-start justify-between">
 					<div class="flex items-start gap-4 flex-1">
 						<!-- Avatar -->
-						<div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+						<div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
 							{participant.volunteer_name?.charAt(0).toUpperCase() || '?'}
 						</div>
 
@@ -34,7 +34,7 @@
 							{#if participant.skills && participant.skills.length > 0}
 								<div class="flex flex-wrap gap-2 mb-2">
 									{#each participant.skills.slice(0, 3) as skill}
-										<Badge variant="secondary" class="text-xs bg-primary-50 text-primary-700">
+										<Badge variant="secondary" class="text-xs bg-blue-50 text-blue-700">
 											<Icon icon="mdi:certificate" class="w-3 h-3 mr-1" />
 											{skill.name}
 										</Badge>
@@ -50,7 +50,7 @@
 							<!-- Hours (if applicable) -->
 							{#if showHours && participant.hours_completed}
 								<div class="flex items-center gap-2 text-sm text-gray-700">
-									<Icon icon="mdi:clock-check" class="w-4 h-4 text-accent-600" />
+									<Icon icon="mdi:clock-check" class="w-4 h-4 text-purple-600" />
 									<span class="font-medium">{participant.hours_completed} hours completed</span>
 								</div>
 							{/if}

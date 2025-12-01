@@ -4,17 +4,16 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	export let sdg = {
 		number: '',
 		title: '',
 		description: ''
 	};
-	export let onSave = () => {};
+	export let onSave = (data) => { console.log('Save SDG:', data); };
 	export let onCancel = null;
 	export let loading = false;
-	export let mode = 'create'; // create or edit
+	export let mode = 'create';
 
 	let localSDG = { ...sdg };
 	let errors = {};
@@ -64,7 +63,7 @@
 			bind:value={localSDG.number}
 			on:input={() => clearError('number')}
 			placeholder="1-17"
-			class="h-11 {errors.number ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.number ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading || mode === 'edit'}
 		/>
 		{#if errors.number}
@@ -83,7 +82,7 @@
 			bind:value={localSDG.title}
 			on:input={() => clearError('title')}
 			placeholder="e.g., No Poverty, Zero Hunger"
-			class="h-11 {errors.title ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.title ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.title}
@@ -93,15 +92,13 @@
 
 	<!-- Description -->
 	<div>
-		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">
-			Description
-		</Label>
+		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">Description</Label>
 		<Textarea
 			id="description"
 			bind:value={localSDG.description}
 			placeholder="Describe this UN Sustainable Development Goal..."
 			rows="5"
-			class="border-primary-300"
+			class="border-blue-300"
 			disabled={loading}
 		/>
 		<p class="text-xs text-gray-500 mt-1">
@@ -131,7 +128,7 @@
 				variant="outline"
 				on:click={onCancel}
 				disabled={loading}
-				class="border-primary-300 hover:bg-primary-50"
+				class="border-blue-300 hover:bg-blue-50"
 			>
 				Cancel
 			</Button>
@@ -139,10 +136,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
 			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">{mode === 'create' ? 'Creating...' : 'Saving...'}</span>
 			{:else}
 				<Icon icon={mode === 'create' ? 'mdi:plus' : 'mdi:content-save'} class="w-5 h-5 mr-2" />

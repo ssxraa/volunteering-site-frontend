@@ -1,9 +1,18 @@
 <script>
 	import Icon from '@iconify/svelte';
 	import { Badge } from '$lib/components/ui/badge';
-	import { formatDateTime } from '$lib/utils/helpers';
 
 	export let logs = [];
+
+	function formatDateTime(dateString) {
+		return new Date(dateString).toLocaleString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
 
 	function getActionIcon(action) {
 		const actionMap = {
@@ -39,8 +48,8 @@
 			sdg: 'bg-blue-100 text-blue-700',
 			category: 'bg-green-100 text-green-700',
 			user: 'bg-orange-100 text-orange-700',
-			mission: 'bg-primary-100 text-primary-700',
-			application: 'bg-accent-100 text-accent-700'
+			mission: 'bg-blue-100 text-blue-700',
+			application: 'bg-purple-100 text-purple-700'
 		};
 		return colorMap[resourceType?.toLowerCase()] || 'bg-gray-100 text-gray-700';
 	}

@@ -5,10 +5,20 @@
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import { validateEmail, validatePassword } from '$lib/utils/validators';
+
+	function validateEmail(email) {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	}
+
+	function validatePassword(password) {
+		if (password.length < 8) {
+			return { valid: false, message: 'Password must be at least 8 characters' };
+		}
+		return { valid: true };
+	}
 
 	export let userType = '';
-	export let onSubmit = () => {};
+	export let onSubmit = (data) => console.log('Register submitted:', data);
 	export let loading = false;
 
 	let formData = {

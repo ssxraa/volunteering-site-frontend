@@ -3,26 +3,54 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { formatDate } from '$lib/utils/helpers';
 
-	export let users = [];
-	export let onViewUser = null;
-	export let onToggleStatus = null;
+	export let users = [
+		{
+			id: 1,
+			email: 'alice@example.com',
+			first_name: 'Alice',
+			last_name: 'Johnson',
+			user_type: 'volunteer',
+			is_active: true,
+			created_at: '2023-01-15T10:00:00Z',
+			total_hours: 120
+		},
+		{
+			id: 2,
+			email: 'org@example.com',
+			organization_name: 'Helping Hands',
+			user_type: 'organization',
+			is_active: true,
+			created_at: '2023-02-20T14:30:00Z',
+			total_missions: 5
+		}
+	];
+	export let onViewUser = (user) => { console.log('View user:', user); };
+	export let onToggleStatus = (user) => { console.log('Toggle status:', user); };
 	export let loading = false;
+
+	function formatDate(dateString) {
+		if (!dateString) return '';
+		return new Date(dateString).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
 </script>
 
 <div class="space-y-3">
 	{#each users as user (user.id)}
-		<Card class="p-5 border-primary-200 hover:shadow-md transition-shadow">
+		<Card class="p-5 border-blue-200 hover:shadow-md transition-shadow">
 			<div class="flex items-start justify-between">
 				<div class="flex items-start gap-4 flex-1">
 					<!-- Avatar -->
 					<div
 						class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0
 						{user.user_type === 'volunteer'
-							? 'bg-primary-500'
+							? 'bg-blue-500'
 							: user.user_type === 'organization'
-								? 'bg-accent-500'
+								? 'bg-purple-500'
 								: 'bg-orange-500'}"
 					>
 						{user.email?.charAt(0).toUpperCase() || '?'}
@@ -44,9 +72,9 @@
 								variant="outline"
 								class="text-xs capitalize
 								{user.user_type === 'volunteer'
-									? 'border-primary-300 text-primary-700'
+									? 'border-blue-300 text-blue-700'
 									: user.user_type === 'organization'
-										? 'border-accent-300 text-accent-700'
+										? 'border-purple-300 text-purple-700'
 										: 'border-orange-300 text-orange-700'}"
 							>
 								{user.user_type}
@@ -69,13 +97,13 @@
 							</span>
 							{#if user.user_type === 'volunteer' && user.total_hours !== undefined}
 								<span class="flex items-center gap-1">
-									<Icon icon="mdi:clock-check" class="w-3 h-3 text-accent-600" />
+									<Icon icon="mdi:clock-check" class="w-3 h-3 text-purple-600" />
 									{user.total_hours} hours
 								</span>
 							{/if}
 							{#if user.user_type === 'organization' && user.total_missions !== undefined}
 								<span class="flex items-center gap-1">
-									<Icon icon="mdi:clipboard-list" class="w-3 h-3 text-primary-600" />
+									<Icon icon="mdi:clipboard-list" class="w-3 h-3 text-blue-600" />
 									{user.total_missions} missions
 								</span>
 							{/if}

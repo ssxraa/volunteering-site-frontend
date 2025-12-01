@@ -8,9 +8,6 @@
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import { organizationsApi } from '$lib/api/organizations';
-	import { missionsApi } from '$lib/api/missions';
-	import { adminApi } from '$lib/api/admin';
 
 	$: missionId = $page.params.id;
 
@@ -31,17 +28,39 @@
 		loading = true;
 		error = '';
 		try {
-			const [missionData, sdgsData, categoriesData, skillsData] = await Promise.all([
-				missionsApi.getMission(missionId),
-				missionsApi.getSDGs(),
-				missionsApi.getCategories(),
-				adminApi.getSkills()
-			]);
+			// Mock data loading
+			await new Promise((resolve) => setTimeout(resolve, 1000));
 
-			mission = missionData;
-			sdgs = sdgsData;
-			categories = categoriesData;
-			skills = skillsData;
+			mission = {
+				id: missionId,
+				title: 'Beach Cleanup',
+				description: 'Join us for a community beach cleanup event.',
+				mission_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+				start_time: '09:00:00',
+				end_time: '12:00:00',
+				location: 'Oran Coast',
+				status: 'active',
+				volunteers_required: 20,
+				category_id: '1',
+				sdg_ids: ['13', '14'],
+				skill_ids: ['s1', 's2']
+			};
+
+			sdgs = [
+				{ id: '1', number: 1, title: 'No Poverty' },
+				{ id: '13', number: 13, title: 'Climate Action' },
+				{ id: '14', number: 14, title: 'Life Below Water' }
+			];
+
+			categories = [
+				{ id: '1', name: 'Environment' },
+				{ id: '2', name: 'Education' }
+			];
+
+			skills = [
+				{ id: 's1', name: 'Teamwork' },
+				{ id: 's2', name: 'Physical Stamina' }
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load mission data';
 		} finally {
@@ -53,10 +72,12 @@
 		saving = true;
 		error = '';
 		try {
-			await organizationsApi.updateMission(missionId, missionData);
+			// Mock API call
+			await new Promise((resolve) => setTimeout(resolve, 1500));
+
 			successMessage = 'Mission updated successfully';
 			setTimeout(() => {
-				goto(`/missions/${missionId}`);
+				goto(`/organization/missions/${missionId}`);
 			}, 1500);
 		} catch (err) {
 			error = err.message || 'Failed to update mission';
@@ -66,7 +87,7 @@
 	}
 
 	function handleCancel() {
-		goto(`/missions/${missionId}`);
+		goto(`/organization/missions/${missionId}`);
 	}
 </script>
 
@@ -79,12 +100,12 @@
 	<div class="mb-8">
 		<button
 			on:click={handleCancel}
-			class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+			class="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
 		>
-			<Icon icon="mdi:arrow-left" class="w-5 h-5" />
+			<Icon icon="mdi:arrow-left" class="h-5 w-5" />
 			Back to Mission
 		</button>
-		<h1 class="text-4xl font-bold text-gray-900 mb-2">Edit Mission</h1>
+		<h1 class="mb-2 text-4xl font-bold text-gray-900">Edit Mission</h1>
 		<p class="text-gray-600">Update mission details and requirements</p>
 	</div>
 
@@ -106,7 +127,7 @@
 			<LoadingSpinner size="lg" />
 		</div>
 	{:else if mission}
-		<Card class="p-8 border-primary-200">
+		<Card class="border-primary-200 p-8">
 			<MissionForm
 				{mission}
 				{sdgs}

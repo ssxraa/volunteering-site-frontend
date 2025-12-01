@@ -8,16 +8,30 @@
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
-	import { authStore } from '$lib/stores/auth';
+	
 	import { goto } from '$app/navigation';
-	import { formatDateTime } from '$lib/utils/helpers';
 
-	$: user = $authStore.user;
-	$: isAuthenticated = $authStore.isAuthenticated;
+	// Mock auth state
+	let user = {
+		email: 'volunteer@example.com',
+		first_name: 'John',
+		last_name: 'Doe'
+	};
+	let isAuthenticated = true;
 
 	let loading = true;
 	let error = '';
 	let notifications = [];
+
+	function formatDateTime(dateString) {
+		return new Date(dateString).toLocaleString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
 
 	onMount(async () => {
 		if (!isAuthenticated) {
@@ -31,7 +45,8 @@
 		loading = true;
 		error = '';
 		try {
-			// Mock notifications - replace with actual API call when backend is ready
+			// Mock notifications
+			await new Promise(resolve => setTimeout(resolve, 1000));
 			notifications = [
 				{
 					id: '1',
@@ -88,19 +103,16 @@
 	}
 
 	async function markAsRead(notificationId) {
-		// API call to mark notification as read
 		notifications = notifications.map((n) =>
 			n.id === notificationId ? { ...n, read: true } : n
 		);
 	}
 
 	async function markAllAsRead() {
-		// API call to mark all notifications as read
 		notifications = notifications.map((n) => ({ ...n, read: true }));
 	}
 
 	async function deleteNotification(notificationId) {
-		// API call to delete notification
 		notifications = notifications.filter((n) => n.id !== notificationId);
 	}
 </script>

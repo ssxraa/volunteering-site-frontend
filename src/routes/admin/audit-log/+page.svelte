@@ -8,8 +8,6 @@
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import Pagination from '$lib/components/shared/Pagination.svelte';
-	import { adminApi } from '$lib/api/admin';
-	import { debounce } from '$lib/utils/helpers';
 
 	let loading = true;
 	let error = '';
@@ -25,6 +23,18 @@
 	);
 	$: totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
+	function debounce(func, wait) {
+		let timeout;
+		return function executedFunction(...args) {
+			const later = () => {
+				clearTimeout(timeout);
+				func(...args);
+			};
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+	}
+
 	onMount(async () => {
 		await loadLogs();
 	});
@@ -33,7 +43,50 @@
 		loading = true;
 		error = '';
 		try {
-			logs = await adminApi.getAuditLogs();
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			logs = [
+				{
+					id: '1',
+					admin_email: 'admin@example.com',
+					action: 'approve',
+					resource_type: 'skill',
+					resource_id: '15',
+					details: 'Approved skill verification for First Aid',
+					ip_address: '192.168.1.100',
+					created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '2',
+					admin_email: 'admin@example.com',
+					action: 'create',
+					resource_type: 'category',
+					resource_id: '8',
+					details: 'Created new category: Healthcare',
+					ip_address: '192.168.1.100',
+					created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '3',
+					admin_email: 'admin@example.com',
+					action: 'deactivate',
+					resource_type: 'user',
+					resource_id: '42',
+					details: 'Deactivated user account',
+					ip_address: '192.168.1.100',
+					created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+				},
+				{
+					id: '4',
+					admin_email: 'admin@example.com',
+					action: 'update',
+					resource_type: 'sdg',
+					resource_id: '3',
+					details: 'Updated SDG description',
+					ip_address: '192.168.1.100',
+					created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+				}
+			];
 			filteredLogs = logs;
 		} catch (err) {
 			error = err.message || 'Failed to load audit logs';

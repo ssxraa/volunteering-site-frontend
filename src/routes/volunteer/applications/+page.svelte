@@ -1,15 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import Icon from '@iconify/svelte';
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/components/ui/tabs';
 	import ApplicationCard from '$lib/components/volunteer/ApplicationCard.svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import EmptyState from '$lib/components/shared/EmptyState.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import { applicationsApi } from '$lib/api/applications';
 
 	let loading = true;
 	let error = '';
@@ -29,7 +26,49 @@
 		loading = true;
 		error = '';
 		try {
-			applications = await applicationsApi.getMyApplications();
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			applications = [
+				{
+					id: '1',
+					status: 'pending',
+					applied_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+					mission: {
+						id: '101',
+						title: 'Beach Cleanup',
+						organization_name: 'Green Algeria',
+						location: 'Oran Coast',
+						mission_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+						start_time: '09:00'
+					}
+				},
+				{
+					id: '2',
+					status: 'approved',
+					applied_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+					mission: {
+						id: '102',
+						title: 'Food Drive',
+						organization_name: 'Food Bank DZ',
+						location: 'Algiers Center',
+						mission_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+						start_time: '10:00'
+					}
+				},
+				{
+					id: '3',
+					status: 'rejected',
+					applied_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+					mission: {
+						id: '103',
+						title: 'Tree Planting',
+						organization_name: 'EcoFuture',
+						location: 'Chrea National Park',
+						mission_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+						start_time: '08:00'
+					}
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load applications';
 		} finally {
@@ -38,7 +77,7 @@
 	}
 
 	function handleViewMission(application) {
-		goto(`/missions/${application.mission.id}`);
+		console.log('View mission:', application.mission);
 	}
 
 	function handleWithdrawClick(application) {
@@ -51,15 +90,14 @@
 	async function confirmWithdraw() {
 		withdrawing = true;
 		withdrawError = '';
-		
+
 		try {
-			await applicationsApi.withdrawApplication(applicationToWithdraw.id);
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			applications = applications.filter((app) => app.id !== applicationToWithdraw.id);
 			withdrawSuccess = true;
 			showWithdrawDialog = false;
-			
-			// Reload applications
-			await loadApplications();
-			
+
 			setTimeout(() => {
 				withdrawSuccess = false;
 			}, 3000);
@@ -70,7 +108,7 @@
 		}
 	}
 
-	$: filteredApplications = applications.filter(app => {
+	$: filteredApplications = applications.filter((app) => {
 		if (activeTab === 'all') return true;
 		if (activeTab === 'pending') return app.status === 'pending';
 		if (activeTab === 'approved') return app.status === 'approved';
@@ -78,19 +116,15 @@
 		return true;
 	});
 
-	$: pendingCount = applications.filter(a => a.status === 'pending').length;
-	$: approvedCount = applications.filter(a => a.status === 'approved').length;
-	$: rejectedCount = applications.filter(a => a.status === 'rejected').length;
+	$: pendingCount = applications.filter((a) => a.status === 'pending').length;
+	$: approvedCount = applications.filter((a) => a.status === 'approved').length;
+	$: rejectedCount = applications.filter((a) => a.status === 'rejected').length;
 </script>
-
-<svelte:head>
-	<title>My Applications - DZ-Volunteer</title>
-</svelte:head>
 
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">
-		<h1 class="text-4xl font-bold text-gray-900 mb-2">My Applications</h1>
+		<h1 class="mb-2 text-4xl font-bold text-gray-900">My Applications</h1>
 		<p class="text-gray-600">Track the status of your mission applications</p>
 	</div>
 
@@ -106,24 +140,36 @@
 
 	<!-- Tabs -->
 	<Tabs bind:value={activeTab} class="w-full">
-		<TabsList class="mb-6 bg-white border border-primary-200">
-			<TabsTrigger value="all" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+		<TabsList class="mb-6 border border-blue-200 bg-white">
+			<TabsTrigger
+				value="all"
+				class="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+			>
 				All ({applications.length})
 			</TabsTrigger>
-			<TabsTrigger value="pending" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+			<TabsTrigger
+				value="pending"
+				class="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+			>
 				Pending ({pendingCount})
 			</TabsTrigger>
-			<TabsTrigger value="approved" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+			<TabsTrigger
+				value="approved"
+				class="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+			>
 				Approved ({approvedCount})
 			</TabsTrigger>
-			<TabsTrigger value="rejected" class="data-[state=active]:bg-primary-500 data-[state=active]:text-white">
+			<TabsTrigger
+				value="rejected"
+				class="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+			>
 				Rejected ({rejectedCount})
 			</TabsTrigger>
 		</TabsList>
 
 		{#if loading}
 			<div class="flex justify-center py-20">
-				<LoadingSpinner size="lg" />
+				<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
 			</div>
 		{:else if error}
 			<ErrorMessage message={error} title="Error Loading Applications" />
@@ -136,10 +182,10 @@
 						title="No Applications Yet"
 						description="You haven't applied to any missions yet. Browse available missions to get started!"
 						actionText="Browse Missions"
-						onAction={() => goto('/missions')}
+						onAction={() => console.log('Browse missions')}
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplications as application (application.id)}
 							<ApplicationCard
 								{application}
@@ -160,7 +206,7 @@
 						description="You don't have any applications awaiting review."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplications as application (application.id)}
 							<ApplicationCard
 								{application}
@@ -181,12 +227,9 @@
 						description="You don't have any approved applications yet."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplications as application (application.id)}
-							<ApplicationCard
-								{application}
-								onView={handleViewMission}
-							/>
+							<ApplicationCard {application} onView={handleViewMission} />
 						{/each}
 					</div>
 				{/if}
@@ -201,12 +244,9 @@
 						description="You don't have any rejected applications."
 					/>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 						{#each filteredApplications as application (application.id)}
-							<ApplicationCard
-								{application}
-								onView={handleViewMission}
-							/>
+							<ApplicationCard {application} onView={handleViewMission} />
 						{/each}
 					</div>
 				{/if}
@@ -222,7 +262,7 @@
 	message="Are you sure you want to withdraw your application for this mission? This action cannot be undone."
 	confirmText="Withdraw"
 	cancelText="Cancel"
-	variant="danger"
+	danger={true}
 	onConfirm={confirmWithdraw}
 	onCancel={() => {
 		showWithdrawDialog = false;

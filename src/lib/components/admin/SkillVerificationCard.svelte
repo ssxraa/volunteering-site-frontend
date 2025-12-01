@@ -3,18 +3,31 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { formatDate } from '$lib/utils/helpers';
 
-	export let verification = {};
+	export let verification = {
+		volunteer_name: 'John Doe',
+		volunteer_email: 'john@example.com',
+		skill_name: 'First Aid',
+		skill_description: 'Basic first aid knowledge',
+		requested_at: new Date().toISOString()
+	};
 	export let onApprove = null;
 	export let onReject = null;
 	export let disabled = false;
+
+	function formatDate(dateString) {
+		return new Date(dateString).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
 </script>
 
-<Card class="p-5 border-primary-200">
+<Card class="p-5 border-blue-200">
 	<div class="flex items-start gap-4">
 		<!-- Avatar -->
-		<div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+		<div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
 			{verification.volunteer_name?.charAt(0).toUpperCase() || '?'}
 		</div>
 
@@ -28,9 +41,9 @@
 			</div>
 
 			<!-- Skill Info -->
-			<div class="mb-3 p-3 bg-primary-50 rounded-lg">
+			<div class="mb-3 p-3 bg-blue-50 rounded-lg">
 				<div class="flex items-center gap-2 mb-1">
-					<Icon icon="mdi:certificate" class="w-4 h-4 text-primary-600" />
+					<Icon icon="mdi:certificate" class="w-4 h-4 text-blue-600" />
 					<p class="font-medium text-gray-900">{verification.skill_name}</p>
 				</div>
 				{#if verification.skill_description}
@@ -49,7 +62,7 @@
 						size="sm"
 						on:click={() => onApprove(verification)}
 						{disabled}
-						class="bg-accent-500 hover:bg-accent-600 flex-1"
+						class="bg-purple-500 hover:bg-purple-600 flex-1"
 					>
 						<Icon icon="mdi:check" class="w-4 h-4 mr-1" />
 						Approve

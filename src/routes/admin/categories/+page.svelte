@@ -10,7 +10,6 @@
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { adminApi } from '$lib/api/admin';
 
 	let loading = true;
 	let error = '';
@@ -30,7 +29,34 @@
 		loading = true;
 		error = '';
 		try {
-			categories = await adminApi.getCategories();
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			categories = [
+				{
+					id: '1',
+					name: 'Environment',
+					description: 'Environmental protection and conservation activities',
+					mission_count: 45
+				},
+				{
+					id: '2',
+					name: 'Education',
+					description: 'Teaching, tutoring, and educational support',
+					mission_count: 32
+				},
+				{
+					id: '3',
+					name: 'Healthcare',
+					description: 'Medical assistance and health awareness programs',
+					mission_count: 28
+				},
+				{
+					id: '4',
+					name: 'Social Services',
+					description: 'Community support and social welfare activities',
+					mission_count: 19
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load categories';
 		} finally {
@@ -59,15 +85,18 @@
 		processing = true;
 		error = '';
 		try {
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
 			if (dialogMode === 'create') {
-				await adminApi.createCategory(categoryData);
+				categories = [...categories, { ...categoryData, id: String(Date.now()), mission_count: 0 }];
 				successMessage = 'Category created successfully';
 			} else {
-				await adminApi.updateCategory(selectedCategory.id, categoryData);
+				categories = categories.map(c => c.id === selectedCategory.id ? { ...c, ...categoryData } : c);
 				successMessage = 'Category updated successfully';
 			}
+			
 			showDialog = false;
-			await loadCategories();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to save category';
@@ -80,10 +109,11 @@
 		processing = true;
 		error = '';
 		try {
-			await adminApi.deleteCategory(selectedCategory.id);
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			categories = categories.filter(c => c.id !== selectedCategory.id);
 			successMessage = 'Category deleted successfully';
 			showConfirmDelete = false;
-			await loadCategories();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to delete category';

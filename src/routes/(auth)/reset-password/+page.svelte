@@ -1,5 +1,4 @@
 <script>
-	import { authApi } from '$lib/api/auth';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -7,13 +6,16 @@
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import { validateEmail } from '$lib/utils/validators';
 
 	let email = '';
 	let loading = false;
 	let error = '';
 	let success = false;
 	let emailError = '';
+
+	function validateEmail(email) {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	}
 
 	function validate() {
 		emailError = '';
@@ -37,15 +39,13 @@
 		loading = true;
 		error = '';
 		success = false;
+		console.log('Reset password request:', email);
 		
-		try {
-			await authApi.requestPasswordReset(email);
-			success = true;
-		} catch (err) {
-			error = err.message || 'Failed to send reset email';
-		} finally {
+		// Mock delay
+		setTimeout(() => {
 			loading = false;
-		}
+			success = true;
+		}, 1500);
 	}
 </script>
 

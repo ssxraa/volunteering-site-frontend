@@ -3,17 +3,51 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { formatDate, formatTime, getStatusColor } from '$lib/utils/helpers';
 
-	export let application = {};
-	export let onView = () => {};
+	export let application = {
+		mission: {
+			title: 'Beach Cleanup',
+			organization_name: 'Helping Hands',
+			mission_date: '2023-12-01',
+			start_time: '09:00',
+			location: 'Sidi Fredj'
+		},
+		status: 'pending',
+		notes: 'I am very interested in this mission',
+		reviewed_at: null
+	};
+	export let onView = (app) => { console.log('View application:', app); };
 	export let onWithdraw = null;
+
+	function formatDate(dateString) {
+		if (!dateString) return '';
+		return new Date(dateString).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	function formatTime(timeString) {
+		if (!timeString) return '';
+		return timeString;
+	}
+
+	function getStatusColor(status) {
+		const colors = {
+			pending: 'bg-yellow-100 text-yellow-700',
+			approved: 'bg-green-100 text-green-700',
+			rejected: 'bg-red-100 text-red-700',
+			completed: 'bg-blue-100 text-blue-700'
+		};
+		return colors[status] || 'bg-gray-100 text-gray-700';
+	}
 
 	$: mission = application.mission || {};
 	$: statusColor = getStatusColor(application.status);
 </script>
 
-<Card class="p-5 border-primary-200 hover:shadow-md transition-shadow">
+<Card class="p-5 border-blue-200 hover:shadow-md transition-shadow">
 	<div class="flex items-start justify-between mb-4">
 		<div class="flex-1">
 			<h3 class="text-lg font-semibold text-gray-900 mb-2">{mission.title}</h3>
@@ -29,16 +63,16 @@
 
 	<div class="grid grid-cols-2 gap-3 mb-4 text-sm">
 		<div class="flex items-center gap-2 text-gray-700">
-			<Icon icon="mdi:calendar" class="w-4 h-4 text-primary-500" />
+			<Icon icon="mdi:calendar" class="w-4 h-4 text-blue-500" />
 			<span>{formatDate(mission.mission_date)}</span>
 		</div>
 		<div class="flex items-center gap-2 text-gray-700">
-			<Icon icon="mdi:clock" class="w-4 h-4 text-primary-500" />
+			<Icon icon="mdi:clock" class="w-4 h-4 text-blue-500" />
 			<span>{formatTime(mission.start_time)}</span>
 		</div>
 		<div class="flex items-center gap-2 text-gray-700 col-span-2">
-			<Icon icon="mdi:map-marker" class="w-4 h-4 text-primary-500" />
-            <span>{mission.location}</span>
+			<Icon icon="mdi:map-marker" class="w-4 h-4 text-blue-500" />
+			<span>{mission.location}</span>
 		</div>
 	</div>
 
@@ -47,7 +81,7 @@
 			variant="outline"
 			size="sm"
 			on:click={() => onView(application)}
-			class="flex-1 border-primary-300 hover:bg-primary-50"
+			class="flex-1 border-blue-300 hover:bg-blue-50"
 		>
 			<Icon icon="mdi:eye" class="w-4 h-4 mr-2" />
 			View Mission

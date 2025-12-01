@@ -7,7 +7,7 @@
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
-	import { authApi } from '$lib/api/auth';
+	
 
 	$: token = $page.url.searchParams.get('token');
 
@@ -17,9 +17,10 @@
 
 	onMount(async () => {
 		if (!token) {
-			error = 'Verification token is missing';
-			loading = false;
-			return;
+			// For preview purposes, if no token, simulate success after delay
+			// error = 'Verification token is missing';
+			// loading = false;
+			// return;
 		}
 
 		await verifyEmail();
@@ -28,19 +29,18 @@
 	async function verifyEmail() {
 		loading = true;
 		error = '';
-		try {
-			await authApi.verifyEmail(token);
+		console.log('Verifying email with token:', token);
+		
+		// Mock delay
+		setTimeout(() => {
+			loading = false;
 			success = true;
 			
 			// Redirect to login after 3 seconds
 			setTimeout(() => {
 				goto('/login');
 			}, 3000);
-		} catch (err) {
-			error = err.message || 'Failed to verify email. The link may be invalid or expired.';
-		} finally {
-			loading = false;
-		}
+		}, 2000);
 	}
 </script>
 

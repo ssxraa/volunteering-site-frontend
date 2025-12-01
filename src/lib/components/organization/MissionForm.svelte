@@ -12,7 +12,6 @@
 	} from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import Icon from '@iconify/svelte';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
 
 	export let mission = {
 		title: '',
@@ -21,18 +20,27 @@
 		mission_date: '',
 		start_time: '',
 		end_time: '',
-		volunteers_required: 1,
+		volunteers_required: 10,
 		sdg_id: null,
 		category_id: null,
 		required_skills: []
 	};
-	export let sdgs = [];
-	export let categories = [];
-	export let skills = [];
-	export let onSave = () => {};
-	export let onCancel = null;
+	export let sdgs = [
+		{ id: 1, number: 14, title: 'Life Below Water' },
+		{ id: 2, number: 15, title: 'Life on Land' }
+	];
+	export let categories = [
+		{ id: 1, name: 'Environment' },
+		{ id: 2, name: 'Education' }
+	];
+	export let skills = [
+		{ id: 1, name: 'First Aid', description: 'Basic first aid knowledge', requires_verification: true },
+		{ id: 2, name: 'Swimming', description: 'Ability to swim', requires_verification: false }
+	];
+	export let onSave = (data) => { console.log('Mission saved:', data); };
+	export let onCancel = () => { console.log('Cancelled'); };
 	export let loading = false;
-	export let mode = 'create'; // create or edit
+	export let mode = 'create';
 
 	let localMission = { ...mission };
 	let selectedSkills = mission.required_skills?.map(s => s.id) || [];
@@ -115,7 +123,7 @@
 			bind:value={localMission.title}
 			on:input={() => clearError('title')}
 			placeholder="e.g., Beach Cleanup in Algiers"
-			class="h-11 {errors.title ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.title ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.title}
@@ -125,16 +133,14 @@
 
 	<!-- Description -->
 	<div>
-		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">
-			Description *
-		</Label>
+		<Label for="description" class="text-sm font-semibold text-gray-700 mb-2">Description *</Label>
 		<Textarea
 			id="description"
 			bind:value={localMission.description}
 			on:input={() => clearError('description')}
 			placeholder="Describe the mission, what volunteers will do, and what impact it will have..."
 			rows="6"
-			class="{errors.description ? 'border-red-500' : 'border-primary-300'}"
+			class="{errors.description ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.description}
@@ -150,7 +156,7 @@
 			bind:value={localMission.location}
 			on:input={() => clearError('location')}
 			placeholder="e.g., Sidi Fredj Beach, Algiers"
-			class="h-11 {errors.location ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.location ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.location}
@@ -167,7 +173,7 @@
 				type="date"
 				bind:value={localMission.mission_date}
 				on:input={() => clearError('mission_date')}
-				class="h-11 {errors.mission_date ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.mission_date ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.mission_date}
@@ -176,15 +182,13 @@
 		</div>
 
 		<div>
-			<Label for="start_time" class="text-sm font-semibold text-gray-700 mb-2">
-				Start Time *
-			</Label>
+			<Label for="start_time" class="text-sm font-semibold text-gray-700 mb-2">Start Time *</Label>
 			<Input
 				id="start_time"
 				type="time"
 				bind:value={localMission.start_time}
 				on:input={() => clearError('start_time')}
-				class="h-11 {errors.start_time ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.start_time ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.start_time}
@@ -199,7 +203,7 @@
 				type="time"
 				bind:value={localMission.end_time}
 				on:input={() => clearError('end_time')}
-				class="h-11 {errors.end_time ? 'border-red-500' : 'border-primary-300'}"
+				class="h-11 {errors.end_time ? 'border-red-500' : 'border-blue-300'}"
 				disabled={loading}
 			/>
 			{#if errors.end_time}
@@ -210,16 +214,14 @@
 
 	<!-- Volunteers Required -->
 	<div>
-		<Label for="volunteers_required" class="text-sm font-semibold text-gray-700 mb-2">
-			Volunteers Needed *
-		</Label>
+		<Label for="volunteers_required" class="text-sm font-semibold text-gray-700 mb-2">Volunteers Needed *</Label>
 		<Input
 			id="volunteers_required"
 			type="number"
 			min="1"
 			bind:value={localMission.volunteers_required}
 			on:input={() => clearError('volunteers_required')}
-			class="h-11 {errors.volunteers_required ? 'border-red-500' : 'border-primary-300'}"
+			class="h-11 {errors.volunteers_required ? 'border-red-500' : 'border-blue-300'}"
 			disabled={loading}
 		/>
 		{#if errors.volunteers_required}
@@ -231,15 +233,13 @@
 	<div>
 		<Label for="sdg-select" class="text-sm font-semibold text-gray-700 mb-2">UN Sustainable Development Goal</Label>
 		<Select bind:value={localMission.sdg_id} disabled={loading}>
-			<SelectTrigger class="h-11 border-primary-300" id="sdg-select">
+			<SelectTrigger class="h-11 border-blue-300" id="sdg-select">
 				<SelectValue placeholder="Select an SDG (optional)" />
 			</SelectTrigger>
 			<SelectContent>
 				<SelectItem value={null}>None</SelectItem>
 				{#each sdgs as sdg}
-					<SelectItem value={sdg.id}>
-						SDG {sdg.number}: {sdg.title}
-					</SelectItem>
+					<SelectItem value={sdg.id}>SDG {sdg.number}: {sdg.title}</SelectItem>
 				{/each}
 			</SelectContent>
 		</Select>
@@ -249,15 +249,13 @@
 	<div>
 		<Label for="category-select" class="text-sm font-semibold text-gray-700 mb-2">Category</Label>
 		<Select bind:value={localMission.category_id} disabled={loading}>
-			<SelectTrigger class="h-11 border-primary-300" id="category-select">
+			<SelectTrigger class="h-11 border-blue-300" id="category-select">
 				<SelectValue placeholder="Select a category (optional)" />
 			</SelectTrigger>
 			<SelectContent>
 				<SelectItem value={null}>None</SelectItem>
 				{#each categories as category}
-					<SelectItem value={category.id}>
-						{category?.name || 'Unnamed Category'}
-					</SelectItem>
+					<SelectItem value={category.id}>{category?.name || 'Unnamed Category'}</SelectItem>
 				{/each}
 			</SelectContent>
 		</Select>
@@ -269,13 +267,13 @@
 		<p class="text-xs text-gray-500 mb-3">
 			Select skills that volunteers need to have. Skills marked with verification requirement will be checked.
 		</p>
-		<div class="border border-primary-300 rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
+		<div class="border border-blue-300 rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
 			{#if skills.length === 0}
 				<p class="text-sm text-gray-500 text-center py-4">No skills available</p>
 			{:else}
 				{#each skills as skill}
 					{#if skill}
-						<label class="flex items-start gap-3 p-3 hover:bg-primary-50 rounded-lg cursor-pointer">
+						<label class="flex items-start gap-3 p-3 hover:bg-blue-50 rounded-lg cursor-pointer">
 							<Checkbox
 								checked={selectedSkills.includes(skill.id)}
 								onCheckedChange={() => toggleSkill(skill.id)}
@@ -308,7 +306,7 @@
 				variant="outline"
 				on:click={onCancel}
 				disabled={loading}
-				class="border-primary-300 hover:bg-primary-50"
+				class="border-blue-300 hover:bg-blue-50"
 			>
 				Cancel
 			</Button>
@@ -316,10 +314,10 @@
 		<Button
 			type="submit"
 			disabled={loading}
-			class="bg-primary-500 hover:bg-primary-600 h-11 px-8"
+			class="bg-blue-500 hover:bg-blue-600 h-11 px-8"
 		>
 			{#if loading}
-				<LoadingSpinner size="sm" color="white" />
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 				<span class="ml-2">{mode === 'create' ? 'Creating...' : 'Saving...'}</span>
 			{:else}
 				<Icon icon={mode === 'create' ? 'mdi:plus' : 'mdi:content-save'} class="w-5 h-5 mr-2" />

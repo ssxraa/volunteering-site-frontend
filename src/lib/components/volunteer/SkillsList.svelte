@@ -3,7 +3,6 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
-	import { getStatusColor } from '$lib/utils/helpers';
 
 	export let skills = [];
 	export let onRemove = null;
@@ -28,7 +27,7 @@
 </script>
 
 {#if skills.length === 0}
-	<Card class="p-8 border-primary-200 text-center">
+	<Card class="p-8 border-blue-200 text-center">
 		<Icon icon="mdi:certificate-outline" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
 		<p class="text-gray-600">No skills added yet</p>
 	</Card>
@@ -36,11 +35,11 @@
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		{#each skills as skill (skill.id)}
 			{@const badge = getVerificationBadge(skill)}
-			<Card class="p-5 border-primary-200">
+			<Card class="p-5 border-blue-200">
 				<div class="flex items-start justify-between mb-3">
 					<div class="flex items-start gap-3 flex-1">
-						<div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-							<Icon icon="mdi:certificate" class="w-5 h-5 text-primary-600" />
+						<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+							<Icon icon="mdi:certificate" class="w-5 h-5 text-blue-600" />
 						</div>
 						<div class="flex-1 min-w-0">
 							<h3 class="font-semibold text-gray-900 mb-1">{skill.skill.name}</h3>
@@ -62,7 +61,7 @@
 								variant="outline"
 								size="sm"
 								on:click={() => onRequestVerification(skill)}
-								class="text-xs border-primary-300 hover:bg-primary-50"
+								class="text-xs border-blue-300 hover:bg-blue-50"
 							>
 								<Icon icon="mdi:shield-check" class="w-3 h-3 mr-1" />
 								Request

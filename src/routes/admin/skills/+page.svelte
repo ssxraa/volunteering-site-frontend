@@ -11,7 +11,6 @@
 	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import SuccessMessage from '$lib/components/shared/SuccessMessage.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { adminApi } from '$lib/api/admin';
 
 	let loading = true;
 	let error = '';
@@ -31,7 +30,34 @@
 		loading = true;
 		error = '';
 		try {
-			skills = await adminApi.getSkills();
+			// Mock data
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			skills = [
+				{
+					id: '1',
+					name: 'First Aid',
+					description: 'Ability to provide emergency medical assistance',
+					requires_verification: true
+				},
+				{
+					id: '2',
+					name: 'Teaching',
+					description: 'Experience in education and tutoring',
+					requires_verification: false
+				},
+				{
+					id: '3',
+					name: 'Public Speaking',
+					description: 'Comfortable speaking to large groups',
+					requires_verification: false
+				},
+				{
+					id: '4',
+					name: 'Environmental Science',
+					description: 'Knowledge of ecological systems and conservation',
+					requires_verification: true
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load skills';
 		} finally {
@@ -60,15 +86,18 @@
 		processing = true;
 		error = '';
 		try {
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
 			if (dialogMode === 'create') {
-				await adminApi.createSkill(skillData);
+				skills = [...skills, { ...skillData, id: String(Date.now()) }];
 				successMessage = 'Skill created successfully';
 			} else {
-				await adminApi.updateSkill(selectedSkill.id, skillData);
+				skills = skills.map(s => s.id === selectedSkill.id ? { ...s, ...skillData } : s);
 				successMessage = 'Skill updated successfully';
 			}
+			
 			showDialog = false;
-			await loadSkills();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to save skill';
@@ -81,10 +110,11 @@
 		processing = true;
 		error = '';
 		try {
-			await adminApi.deleteSkill(selectedSkill.id);
+			// Mock API call
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			skills = skills.filter(s => s.id !== selectedSkill.id);
 			successMessage = 'Skill deleted successfully';
 			showConfirmDelete = false;
-			await loadSkills();
 			setTimeout(() => (successMessage = ''), 3000);
 		} catch (err) {
 			error = err.message || 'Failed to delete skill';

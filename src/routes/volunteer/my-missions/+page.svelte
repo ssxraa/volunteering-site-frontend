@@ -1,29 +1,75 @@
 <script>
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import Icon from '@iconify/svelte';
-	import { Card } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import EmptyState from '$lib/components/shared/EmptyState.svelte';
-	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
-	import { applicationsApi } from '$lib/api/applications';
-	import { formatDate, formatTime, calculateDaysUntil } from '$lib/utils/helpers';
+	import { Card } from '$lib/components/ui/card';
 
 	let loading = true;
 	let error = '';
 	let missions = [];
 
+	function formatDate(dateString) {
+		if (!dateString) return '';
+		return new Date(dateString).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	function formatTime(timeString) {
+		if (!timeString) return '';
+		return timeString;
+	}
+
+	function calculateDaysUntil(dateString) {
+		const date = new Date(dateString);
+		const today = new Date();
+		const diffTime = date - today;
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		return diffDays;
+	}
+
 	onMount(async () => {
-		await loadMyMissions();
+		await loadMissions();
 	});
 
-	async function loadMyMissions() {
+	async function loadMissions() {
 		loading = true;
 		error = '';
 		try {
-			missions = await applicationsApi.getMyMissions();
+			await new Promise((resolve) => setTimeout(resolve, 800));
+
+			missions = [
+				{
+					id: '1',
+					title: 'Beach Cleanup',
+					organization_name: 'Green Algeria',
+					mission_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+					start_time: '09:00',
+					end_time: '12:00',
+					location: 'Oran Coast'
+				},
+				{
+					id: '2',
+					title: 'Food Drive',
+					organization_name: 'Food Bank DZ',
+					mission_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+					start_time: '10:00',
+					end_time: '14:00',
+					location: 'Algiers Center'
+				},
+				{
+					id: '3',
+					title: 'Tree Planting',
+					organization_name: 'EcoFuture',
+					mission_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+					start_time: '08:00',
+					end_time: '16:00',
+					location: 'Chrea National Park'
+				}
+			];
 		} catch (err) {
 			error = err.message || 'Failed to load missions';
 		} finally {
@@ -32,74 +78,74 @@
 	}
 
 	function handleMissionClick(mission) {
-		goto(`/missions/${mission.id}`);
+		console.log('View mission:', mission);
 	}
 
-	$: upcomingMissions = missions.filter(m => {
-		const days = calculateDaysUntil(m.mission_date);
-		return days !== null && days >= 0;
-	});
-
-	$: pastMissions = missions.filter(m => {
-		const days = calculateDaysUntil(m.mission_date);
-		return days !== null && days < 0;
-	});
+	$: upcomingMissions = missions.filter(m => new Date(m.mission_date) >= new Date());
+	$: pastMissions = missions.filter(m => new Date(m.mission_date) < new Date());
 </script>
-
-<svelte:head>
-	<title>My Missions - DZ-Volunteer</title>
-</svelte:head>
 
 <div class="p-8">
 	<!-- Header -->
 	<div class="mb-8">
-		<h1 class="text-4xl font-bold text-gray-900 mb-2">My Missions</h1>
+		<h1 class="mb-2 text-4xl font-bold text-gray-900">My Missions</h1>
 		<p class="text-gray-600">Missions you've been accepted to participate in</p>
 	</div>
 
 	{#if loading}
 		<div class="flex justify-center py-20">
-			<LoadingSpinner size="lg" />
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
 		</div>
 	{:else if error}
-		<ErrorMessage message={error} title="Error Loading Missions" />
+		<div class="rounded-lg border border-red-200 bg-red-50 p-4">
+			<div class="flex items-start gap-3">
+				<Icon icon="mdi:alert-circle" class="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+				<div class="flex-1">
+					<h3 class="font-semibold text-red-800">Error Loading Missions</h3>
+					<p class="mt-1 text-sm text-red-700">{error}</p>
+				</div>
+			</div>
+		</div>
 	{:else if missions.length === 0}
-		<EmptyState
-			icon="mdi:calendar-blank"
-			title="No Accepted Missions"
-			description="You haven't been accepted to any missions yet. Keep applying to opportunities that interest you!"
-			actionText="Browse Missions"
-			onAction={() => goto('/missions')}
-		/>
+		<div class="flex flex-col items-center justify-center px-4 py-12">
+			<div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
+				<Icon icon="mdi:calendar-blank" class="h-10 w-10 text-blue-400" />
+			</div>
+			<h3 class="mb-2 text-lg font-semibold text-gray-900">No Accepted Missions</h3>
+			<p class="mb-6 max-w-md text-center text-gray-600">
+				You haven't been accepted to any missions yet. Keep applying to opportunities that interest you!
+			</p>
+			<Button class="bg-blue-500 hover:bg-blue-600">Browse Missions</Button>
+		</div>
 	{:else}
 		<!-- Upcoming Missions -->
 		<div class="mb-12">
-			<h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-				<Icon icon="mdi:calendar-check" class="w-7 h-7 text-primary-500" />
+			<h2 class="mb-6 flex items-center gap-3 text-2xl font-bold text-gray-900">
+				<Icon icon="mdi:calendar-check" class="h-7 w-7 text-blue-500" />
 				Upcoming Missions ({upcomingMissions.length})
 			</h2>
 
 			{#if upcomingMissions.length === 0}
-				<Card class="p-8 border-primary-200 text-center">
-					<Icon icon="mdi:calendar-blank" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+				<Card class="border-blue-200 p-8 text-center">
+					<Icon icon="mdi:calendar-blank" class="mx-auto mb-3 h-12 w-12 text-gray-400" />
 					<p class="text-gray-600">No upcoming missions</p>
 				</Card>
 			{:else}
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each upcomingMissions as mission (mission.id)}
 						{@const daysUntil = calculateDaysUntil(mission.mission_date)}
-						<Card class="p-6 border-primary-200 hover:shadow-lg transition-shadow">
-							<div class="flex items-start justify-between mb-4">
-								<div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-									<Icon icon="mdi:calendar-check" class="w-6 h-6 text-primary-600" />
+						<Card class="border-blue-200 p-6 transition-shadow hover:shadow-lg">
+							<div class="mb-4 flex items-start justify-between">
+								<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
+									<Icon icon="mdi:calendar-check" class="h-6 w-6 text-blue-600" />
 								</div>
 								{#if daysUntil !== null}
 									<Badge
-										class="{daysUntil <= 3
+										class={daysUntil <= 3
 											? 'bg-red-100 text-red-700'
 											: daysUntil <= 7
 												? 'bg-orange-100 text-orange-700'
-												: 'bg-primary-100 text-primary-700'}"
+												: 'bg-blue-100 text-blue-700'}
 									>
 										{#if daysUntil === 0}
 											Today
@@ -112,23 +158,23 @@
 								{/if}
 							</div>
 
-							<h3 class="text-lg font-semibold text-gray-900 mb-3">{mission.title}</h3>
+							<h3 class="mb-3 text-lg font-semibold text-gray-900">{mission.title}</h3>
 
-							<div class="space-y-2 mb-4 text-sm">
+							<div class="mb-4 space-y-2 text-sm">
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:office-building" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:office-building" class="h-4 w-4 text-gray-500" />
 									<span>{mission.organization_name}</span>
 								</div>
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:calendar" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:calendar" class="h-4 w-4 text-gray-500" />
 									<span>{formatDate(mission.mission_date)}</span>
 								</div>
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:clock" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:clock" class="h-4 w-4 text-gray-500" />
 									<span>{formatTime(mission.start_time)} - {formatTime(mission.end_time)}</span>
 								</div>
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:map-marker" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:map-marker" class="h-4 w-4 text-gray-500" />
 									<span class="line-clamp-1">{mission.location}</span>
 								</div>
 							</div>
@@ -137,9 +183,9 @@
 								variant="outline"
 								size="sm"
 								on:click={() => handleMissionClick(mission)}
-								class="w-full border-primary-300 hover:bg-primary-50"
+								class="w-full border-blue-300 hover:bg-blue-50"
 							>
-								<Icon icon="mdi:eye" class="w-4 h-4 mr-2" />
+								<Icon icon="mdi:eye" class="mr-2 h-4 w-4" />
 								View Details
 							</Button>
 						</Card>
@@ -150,38 +196,36 @@
 
 		<!-- Past Missions -->
 		<div>
-			<h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-				<Icon icon="mdi:history" class="w-7 h-7 text-gray-500" />
+			<h2 class="mb-6 flex items-center gap-3 text-2xl font-bold text-gray-900">
+				<Icon icon="mdi:history" class="h-7 w-7 text-gray-500" />
 				Past Missions ({pastMissions.length})
 			</h2>
 
 			{#if pastMissions.length === 0}
-				<Card class="p-8 border-primary-200 text-center">
-					<Icon icon="mdi:history" class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+				<Card class="border-blue-200 p-8 text-center">
+					<Icon icon="mdi:history" class="mx-auto mb-3 h-12 w-12 text-gray-400" />
 					<p class="text-gray-600">No past missions</p>
 				</Card>
 			{:else}
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each pastMissions as mission (mission.id)}
-						<Card class="p-6 border-gray-200 opacity-75 hover:opacity-100 transition-opacity">
-							<div class="flex items-start justify-between mb-4">
-								<div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-									<Icon icon="mdi:check-circle" class="w-6 h-6 text-gray-600" />
+						<Card class="border-gray-200 p-6 opacity-75 transition-opacity hover:opacity-100">
+							<div class="mb-4 flex items-start justify-between">
+								<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
+									<Icon icon="mdi:check-circle" class="h-6 w-6 text-gray-600" />
 								</div>
-								<Badge variant="secondary" class="bg-gray-100 text-gray-600">
-									Completed
-								</Badge>
+								<Badge variant="secondary" class="bg-gray-100 text-gray-600">Completed</Badge>
 							</div>
 
-							<h3 class="text-lg font-semibold text-gray-900 mb-3">{mission.title}</h3>
+							<h3 class="mb-3 text-lg font-semibold text-gray-900">{mission.title}</h3>
 
-							<div class="space-y-2 mb-4 text-sm">
+							<div class="mb-4 space-y-2 text-sm">
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:office-building" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:office-building" class="h-4 w-4 text-gray-500" />
 									<span>{mission.organization_name}</span>
 								</div>
 								<div class="flex items-center gap-2 text-gray-700">
-									<Icon icon="mdi:calendar" class="w-4 h-4 text-gray-500" />
+									<Icon icon="mdi:calendar" class="h-4 w-4 text-gray-500" />
 									<span>{formatDate(mission.mission_date)}</span>
 								</div>
 							</div>
@@ -192,7 +236,7 @@
 								on:click={() => handleMissionClick(mission)}
 								class="w-full border-gray-300 hover:bg-gray-50"
 							>
-								<Icon icon="mdi:eye" class="w-4 h-4 mr-2" />
+								<Icon icon="mdi:eye" class="mr-2 h-4 w-4" />
 								View Details
 							</Button>
 						</Card>

@@ -18,9 +18,7 @@
 </script>
 
 <div
-	class="inline-flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-full font-semibold shadow-lg {sizes[
-		size
-	]}"
+	class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full font-semibold shadow-lg {sizes[size]}"
 >
 	<Icon icon="mdi:clock-check" class={iconSizes[size]} />
 	<span>{hours} Hours</span>

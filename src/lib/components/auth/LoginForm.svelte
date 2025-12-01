@@ -4,9 +4,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import Icon from '@iconify/svelte';
 	import LoadingSpinner from '$lib/components/shared/LoadingSpinner.svelte';
-	import { validateEmail } from '$lib/utils/validators';
 
-	export let onSubmit = () => {};
+	function validateEmail(email) {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+	}
+
+	export let onSubmit = (data) => console.log('Login submitted:', data);
 	export let loading = false;
 
 	let email = '';

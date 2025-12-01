@@ -1,15 +1,14 @@
 <script>
-	import { authStore } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
 	import Icon from '@iconify/svelte';
-	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 	import UserTypeSelector from '$lib/components/auth/UserTypeSelector.svelte';
 	import RegisterForm from '$lib/components/auth/RegisterForm.svelte';
+	import ErrorMessage from '$lib/components/shared/ErrorMessage.svelte';
 
-	let step = 1; // 1: select type, 2: fill form
+	let step = 1;
 	let userType = '';
-
-	$: loading = $authStore.loading;
-	$: error = $authStore.error;
+	let loading = false;
+	let error = '';
 
 	function handleTypeSelect(type) {
 		userType = type;
@@ -18,18 +17,26 @@
 
 	function handleBack() {
 		step = 1;
-		userType = '';
-		authStore.clearError();
+		error = '';
 	}
 
 	async function handleSubmit(formData) {
+		loading = true;
+		error = '';
+
 		try {
-			await authStore.register({
-				...formData,
-				user_type: userType
-			});
+			// Mock registration
+			await new Promise(resolve => setTimeout(resolve, 1500));
+			
+			// Simulate successful registration
+			console.log('Registration data:', { ...formData, user_type: userType });
+			
+			// Redirect to login
+			goto('/login?registered=true');
 		} catch (err) {
-			// Error handled by store
+			error = err.message || 'Registration failed. Please try again.';
+		} finally {
+			loading = false;
 		}
 	}
 </script>
