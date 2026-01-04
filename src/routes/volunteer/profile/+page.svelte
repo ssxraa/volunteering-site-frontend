@@ -29,8 +29,8 @@
 			await new Promise((resolve) => setTimeout(resolve, 800));
 
 			profile = {
-				first_name: 'Ahmed',
-				last_name: 'Benali',
+				first_name: 'Hassani',
+				last_name: 'Abd el Aziz',
 				bio: 'Passionate about environmental conservation and community service.',
 				motivations: 'I believe in making a positive impact in my community.',
 				avatar_url: null
